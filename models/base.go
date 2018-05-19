@@ -23,7 +23,7 @@ type connect struct {
 }
 
 //读取配置文件，初始化数据库和redis连接池
-func initBaseConfig(file string)error{
+func InitBaseConfig(file string)error{
 	lcf,err = lconfig.NewConfig(file)
 	if err != nil{
 		return err
@@ -78,4 +78,5 @@ func initDefaultConfig()error {
 	if bolg_pagesize <= 0 {
 		return errors.New("Can't not find default parameters:bolg_pagesize")
 	}
+	return nil
 }

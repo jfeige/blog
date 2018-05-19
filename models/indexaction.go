@@ -22,21 +22,25 @@ func ArticleList(args map[string]interface{})[]int{
 	key := "articleList:" + strconv.Itoa(isshow)
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
-
+	fmt.Println("--1--",key)
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 	if !exists{
+		fmt.Println("--2--")
 		db := conn.GetMysqlConn()
 		pargs := make([]interface{},0)
-		sql := "select id from b_article order by publish_time desc "
+		sql := "select id,publish_time from b_article order by publish_time desc "
 		if isshow > -1{
 			sql = "select id,publish_time from b_article order by publish_time where isshow=? where desc "
 			pargs = append(pargs,isshow)
 		}
+		fmt.Println("--3--",sql)
 		stmt,err := db.Prepare(sql)
 		if err != nil{
+			fmt.Println("----",err)
 			log.Error(fmt.Sprintf("db.Prepare has error:",err))
 			return	list
 		}
+		fmt.Println("--4--")
 		defer stmt.Close()
 
 		rows,err := stmt.Query()
@@ -49,6 +53,7 @@ func ArticleList(args map[string]interface{})[]int{
 		var id,publish_time int
 		for rows.Next(){
 			rows.Scan(&id,&publish_time)
+			fmt.Println("--5--",id,publish_time)
 			rargs = append(rargs,publish_time,id)
 		}
 		if len(rargs) > 1{
@@ -61,11 +66,12 @@ func ArticleList(args map[string]interface{})[]int{
 		offset := (page - 1) * pagesize
 		limit := offset + pagesize - 1
 		var args = []interface{}{key, offset, limit}
-		list,err := redis.Ints(rconn.Do("ZREVRANGE",args...))
+		list,err = redis.Ints(rconn.Do("ZREVRANGE",args...))
 		if err != nil{
 			log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
 			return list
 		}
 	}
+	fmt.Println("--6--",list)
 	return list
 }
