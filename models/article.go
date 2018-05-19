@@ -1,6 +1,9 @@
 package models
 
-
+import (
+	"strconv"
+	"github.com/garyburd/redigo/redis"
+)
 //文章
 type Article struct {
 	Id int `redis:"id"`
@@ -18,7 +21,30 @@ type Article struct {
 
 //加载指定的文章
 func (this *Article) Load(id int) error{
+	rconn := conn.GetRedisConn()
+	defer rconn.Close()
 
+	key := "article:" + strconv.Itoa(id)
+	values,err := redis.Values(rconn.Do("HGETALL",key))
+	if err == nil && len(values) > 0{
+		err = redis.ScanStruct(values, this)
+		if err == nil {
+			return nil
+		}
+	}
+	sql := "select id,title,content,userid,categoryid,tagid,read_count,comment_count,publish_time,publish_date,isshow from b_article where id=?"
+	db := conn.GetMysqlConn()
+	stmt,err := db.Prepare(sql)
+	if err != nil{
+		return err
+	}
+	defer stmt.Close()
+	row := stmt.QueryRow(id)
+	err = row.Scan(&this.Id,&this.Title,&this.Content,&this.Userid,&this.Categoryid,&this.Tagid,&this.Read_count,&this.Comment_count,&this.Publish_time,&this.Publish_date,&this.Isshow)
+	if err != nil{
+		return err
+	}
+	rconn.Send("HMSET",redis.Args{}.Add(key).AddFlat(this)...)
 	return nil
 }
 

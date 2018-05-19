@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+
 	router := gin.Default()
 
 	router.GET("/lifei", lifei)
@@ -14,5 +15,6 @@ func main() {
 }
 
 func lifei(context *gin.Context) {
+	
 	context.String(http.StatusOK, "hahahah")
 }
