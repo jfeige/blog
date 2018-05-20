@@ -21,6 +21,7 @@ func main() {
 	//router.Static("/static/","/Users/lifei/Documents/golang/src/blog/static/")
 	router.Static("/static", "./static")
 	router.GET("/index", controllers.Index)
+	router.GET("/article",controllers.Article)
 
 	http.ListenAndServe(":8080", router)
 }
