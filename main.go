@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"blog/controllers"
 	"blog/models"
-	//"html/template"
-	//"fmt"
 	"fmt"
 )
 
@@ -19,16 +17,11 @@ func main() {
 
 	//t, err := template.ParseFiles("views/index.tmpl")
 
-	//fmt.Println(t,err)
 	router.LoadHTMLGlob("views/*")
+	//router.Static("/static/","/Users/lifei/Documents/golang/src/blog/static/")
+	router.Static("/static", "./static")
 	router.GET("/index", controllers.Index)
 
 	http.ListenAndServe(":8080", router)
 }
 
-func lifei(context *gin.Context) {
-
-
-
-	context.String(http.StatusOK, "hahahah")
-}
