@@ -5,7 +5,7 @@
 <title>花气袭人是酒香</title>
 <meta name="Keywords" content="" >
 <meta name="Description" content="" >
-<link href="css/index.css" rel="stylesheet">
+<link href="/static/css/index.css" rel="stylesheet">
 <!--[if lt IE 9]>
 <script src="js/modernizr.js"></script>
 <![endif]-->
@@ -57,11 +57,11 @@
 <aside class="navsidebar">
     <h2><p>个人档案</p></h2>
    <div class="vcard">
-      <p class="fn">姓名：杨青</p>
-      <p class="nickname">网名：DanceSmile | 即步非烟</p>
-      <p class="url">主页：<a href="http://www.yangqq.com" target="_blank">www.yangqq.com</a></p>
-      <p class="address">现居：天津市―滨海新区</p>
-      <p class="role">职业：网站设计、网站制作</p>
+      <p class="fn">姓名：{{.webSet.Name}}</p>
+      <p class="nickname">网名：{{.webSet.Nickname}}</p>
+      <p class="url">主页：<a href="{{.webSet.Weburl}}" target="_blank">{{.webSet.Weburl}}</a></p>
+      <p class="address">现居：{{.webSet.Place}}</p>
+      <p class="role">职业：{{.webSet.Vocation}}</p>
     </div>
    <h2><p>博客分类</p></h2>
 <ul class="news">
