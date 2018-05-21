@@ -4,13 +4,14 @@ import (
 	"strconv"
 	"github.com/garyburd/redigo/redis"
 	"sync"
+	"fmt"
 )
 //评论
 type Comment struct {
 	Id int `redis:"id"`
 	Articleid string `redis:"articleid"`
 	Name string `redis:"name"`
-	Content int  `redis:"content"`
+	Content string  `redis:"content"`
 	Atime int `redis:"atime"`
 }
 
@@ -22,7 +23,7 @@ func (this *Comment) Load(id int) error{
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
 
-	key := "article:" + strconv.Itoa(id)
+	key := "comment:" + strconv.Itoa(id)
 	values,err := redis.Values(rconn.Do("HGETALL",key))
 	if err == nil && len(values) > 0{
 		err = redis.ScanStruct(values, this)
@@ -34,12 +35,14 @@ func (this *Comment) Load(id int) error{
 	db := conn.GetMysqlConn()
 	stmt,err := db.Prepare(sql)
 	if err != nil{
+		fmt.Println("--1--",err)
 		return err
 	}
 	defer stmt.Close()
 	row := stmt.QueryRow(id)
 	err = row.Scan(&this.Id,&this.Articleid,&this.Name,&this.Content,&this.Atime)
 	if err != nil{
+		fmt.Println("--2-",err)
 		return err
 	}
 	rconn.Send("HMSET",redis.Args{}.Add(key).AddFlat(this)...)

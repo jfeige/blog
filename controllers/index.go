@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 	"strconv"
+	"fmt"
 )
 
 
@@ -67,7 +68,7 @@ func Article(context *gin.Context){
 		models.MultipleLoadComment(id,pos,commentList,&wg)
 	}
 	wg.Wait()
-
+	fmt.Println("------",commentList)
 	tmp_gh,_ := context.Get("gh")
 	gh := tmp_gh.(map[string]interface{})
 	gh["commentList"] = commentList

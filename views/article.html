@@ -23,25 +23,17 @@
           <h2>{{.article.Title}}</h2><div class="clr"></div>
           <p>{{.article.Content}}</p>
           <p>Tagged: <a href="#">orci</a>, <a href="#">lectus</a>, <a href="#">varius</a>, <a href="#">turpis</a></p>
-          <p><a href="#"><strong>Comments (3)</strong></a>  <span>&nbsp;&bull;&nbsp;</span>  May 27, 2010  <span>&nbsp;&bull;&nbsp;</span>  <a href="#"><strong>Edit</strong></a></p>
+          <p><a href="#"><strong>Comments ({{.article.Comment_count}})</strong></a>  <span>&nbsp;&bull;&nbsp;</span>  May 27, 2010  <span>&nbsp;&bull;&nbsp;</span>  <a href="#"><strong>Edit</strong></a></p>
         </div>
         <div class="article">
-          <h2><span>3</span> Responses</h2><div class="clr"></div>
-          <div class="comment">
-            <a href="#"><img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" /></a>
-            <p><a href="#">admin</a> Says:<br />April 20th, 2009 at 2:17 pm</p>
-            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec libero. Suspendisse bibendum.</p>
-          </div>
-          <div class="comment">
-            <a href="#"><img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" /></a>
-            <p><a href="#">Owner</a> Says:<br />April 20th, 2009 at 3:21 pm</p>
-            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec libero. Suspendisse bibendum. Cras id urna. Morbi tincidunt, orci ac convallis aliquam, lectus turpis varius lorem, eu posuere nunc justo tempus leo.</p>
-          </div>
-          <div class="comment">
-            <a href="#"><img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" /></a>
-            <p><a href="#">admin</a> Says:<br />April 20th, 2009 at 2:17 pm</p>
-            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec libero. Suspendisse bibendum.</p>
-          </div>
+          <h2><span>{{.article.Comment_count}}</span> Responses</h2><div class="clr"></div>
+          {{range .commentList}}
+            <div class="comment">
+              <a href="#"><img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" /></a>
+              <p><a href="#">{{.Name}}</a> Says:<br />April 20th, 2009 at 2:17 pm</p>
+              <p>{{.Content}}</p>
+            </div>
+          {{end}}
         </div>
         <div class="article">
           <h2><span>Leave a</span> Reply</h2><div class="clr"></div>

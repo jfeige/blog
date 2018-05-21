@@ -27,7 +27,6 @@ func main() {
 	//类别页面
 	router.GET("/category/:cateId",FrongWare(), controllers.Index)
 	//留言板
-
 	http.ListenAndServe(":8080", router)
 }
 
