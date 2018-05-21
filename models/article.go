@@ -3,6 +3,7 @@ package models
 import (
 	"strconv"
 	"github.com/garyburd/redigo/redis"
+	"sync"
 )
 //文章
 type Article struct {
@@ -15,11 +16,14 @@ type Article struct {
 	Read_count int `redis:"read_count"`
 	Comment_count int `redis:"comment_count"`
 	Publish_time int `redis:"publish_time"`
-	Publish_date int `redis:"publish_time"`
+	Publish_date int `redis:"publish_date"`
 	Isshow int `redis:"isshow"`
 }
 
-//加载指定的文章
+/**
+	加载指定的文章
+ */
+
 func (this *Article) Load(id int) error{
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
@@ -48,9 +52,15 @@ func (this *Article) Load(id int) error{
 	return nil
 }
 
-
-
-//添加一篇文章
-func (this *Article) Add() error{
-	return nil
+/**
+	多线程加载Article对象
+ */
+func MultipleLoadArticle(id int,position int,article_list []*Article,wg *sync.WaitGroup){
+	defer wg.Done()
+	article := new(Article)
+	err := article.Load(id)
+	if err == nil{
+		article_list[position] = article
+	}
+	return
 }

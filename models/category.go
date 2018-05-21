@@ -3,12 +3,14 @@ package models
 import (
 	"strconv"
 	"github.com/garyburd/redigo/redis"
+	"sync"
 )
 //类别
 type Category struct {
 	Id int `redis:"id"`
 	Name string `redis:"name"`
-	Index string `redis:"index"`
+	Article_cnt int `redis:"article_cnt"`
+	Sort string `redis:"sort"`
 }
 
 
@@ -24,7 +26,7 @@ func (this *Category) Load(id int)error{
 			return nil
 		}
 	}
-	sql := "select id,name,index from b_category where id=?"
+	sql := "select id,name,article_cnt,sort from b_category where id=?"
 	db := conn.GetMysqlConn()
 	stmt,err := db.Prepare(sql)
 	if err != nil{
@@ -32,10 +34,24 @@ func (this *Category) Load(id int)error{
 	}
 	defer stmt.Close()
 	row := stmt.QueryRow(id)
-	err = row.Scan(&this.Id,&this.Name,&this.Index)
+	err = row.Scan(&this.Id,&this.Name,&this.Article_cnt,&this.Sort)
 	if err != nil{
 		return err
 	}
 	rconn.Send("HMSET",redis.Args{}.Add(key).AddFlat(this)...)
 	return nil
+}
+
+
+/**
+	多线程加载Category对象
+ */
+func MultipleLoadCategory(id int,position int,category_list []*Category,wg *sync.WaitGroup){
+	defer wg.Done()
+	category := new(Category)
+	err := category.Load(id)
+	if err == nil{
+		category_list[position] = category
+	}
+	return
 }

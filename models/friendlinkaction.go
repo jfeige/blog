@@ -18,21 +18,23 @@ func FLink_List()[]int{
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 
 	if !exists{
-		sql := "select id,index from b_friendlink order by index asc"
+		sql := "select id,sort from b_friendlink order by sort asc"
 		db := conn.GetMysqlConn()
 		rows,err := db.Query(sql)
 		if err != nil{
+			fmt.Println(err)
 			return list
 		}
 		rargs := make([]interface{},0)
-		var id,index int
+		rargs = append(rargs,key)
+		var id,sort int
 		for rows.Next(){
-			err := rows.Scan(&id,&index)
+			err := rows.Scan(&id,&sort)
 			if err != nil{
 				log.Error(fmt.Sprintf("rows.Scan has error:%v",err))
 				continue
 			}
-			rargs = append(rargs,index,id)
+			rargs = append(rargs,sort,id)
 		}
 		if len(rargs) > 1{
 			rconn.Send("ZADD",rargs...)
@@ -46,5 +48,5 @@ func FLink_List()[]int{
 			return list
 		}
 	}
-	return nil
+	return list
 }

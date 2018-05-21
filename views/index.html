@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>蓝色斜纹导航博客模板 - 免费模板网</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link href="/static/css/style.css" rel="stylesheet" type="text/css" />
+
+</head>
+<body>
+<div class="main">
+  {{template "header" .}}
+  <div class="clr"></div>
+  <div class="content">
+    <div class="content_resize">
+      <div class="mainbar">
+        {{range .articleList}}
+            <div class="article">
+              <h2><span>{{.Title}}</span></h2>
+              <br/>
+              <div class="clr"></div>
+              <div class="clr"></div>
+              {{.Content}}
+              <p class="dateview"><span>2018-05-20</span><span>作者：杨青</span><span>分类：<a href="/" target="_blank">心得笔记</a></span><span>阅读(112)</span><span>评论(210)</span></p>
+              <p><a href="/article/{{.Id}}">Read more </a></p>
+            </div>
+        {{end}}
+        <div class="article" style="padding:5px 20px 2px 20px; background:none; border:0;">
+          <p>Page 1 of 2 <span class="butons"><a href="#">3</a><a href="#">2</a> <a href="#" class="active">1</a></span></p>
+        </div>
+      </div>
+      {{template "right" .}}
+      <div class="clr"></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

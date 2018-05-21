@@ -18,13 +18,15 @@ func CategoryList()[]int{
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 
 	if !exists{
-		sql := "select id,index from b_category order by index asc"
+		sql := "select id,sort from b_category order by sort asc"
 		db := conn.GetMysqlConn()
 		rows,err := db.Query(sql)
 		if err != nil{
+			log.Error("db.Query has error:%v",err)
 			return list
 		}
 		rargs := make([]interface{},0)
+		rargs = append(rargs,key)
 		var id,index int
 		for rows.Next(){
 			err := rows.Scan(&id,&index)

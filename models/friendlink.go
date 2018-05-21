@@ -3,13 +3,14 @@ package models
 import (
 	"strconv"
 	"github.com/garyburd/redigo/redis"
+	"sync"
 )
 
 type FriendLink struct {
 	Id int `redis:"id"`
 	Webname string `redis:"webname"`
 	Weburl string `redis:"weburl"`
-	Index 	int `redis:"index"`
+	Sort 	int `redis:"sort"`
 }
 
 func (this *FriendLink) Load(id int) error{
@@ -24,7 +25,7 @@ func (this *FriendLink) Load(id int) error{
 			return nil
 		}
 	}
-	sql := "select id,webname,weburl,index from b_friendlink where id=?"
+	sql := "select id,webname,weburl,sort from b_friendlink where id=?"
 	db := conn.GetMysqlConn()
 	stmt,err := db.Prepare(sql)
 	if err != nil{
@@ -32,10 +33,25 @@ func (this *FriendLink) Load(id int) error{
 	}
 	defer stmt.Close()
 	row := stmt.QueryRow(id)
-	err = row.Scan(&this.Id,&this.Webname,&this.Weburl,&this.Index)
+	err = row.Scan(&this.Id,&this.Webname,&this.Weburl,&this.Sort)
 	if err != nil{
 		return err
 	}
 	rconn.Send("HMSET",redis.Args{}.Add(key).AddFlat(this)...)
 	return nil
+}
+
+
+
+/**
+	多线程加载Category对象
+ */
+func MultipleLoadFLink(id int,position int,flink_list []*FriendLink,wg *sync.WaitGroup){
+	defer wg.Done()
+	flink := new(FriendLink)
+	err := flink.Load(id)
+	if err == nil{
+		flink_list[position] = flink
+	}
+	return
 }
