@@ -22,15 +22,20 @@
         <div class="article">
           <h2>{{.article.Title}}</h2><div class="clr"></div>
           <p>{{.article.Content}}</p>
-          <p>Tagged: <a href="#">orci</a>, <a href="#">lectus</a>, <a href="#">varius</a>, <a href="#">turpis</a></p>
-          <p><a href="#"><strong>Comments ({{.article.Comment_count}})</strong></a>  <span>&nbsp;&bull;&nbsp;</span>  May 27, 2010  <span>&nbsp;&bull;&nbsp;</span>  <a href="#"><strong>Edit</strong></a></p>
+          <p>标签:
+              {{range $k, $v := .article.Tag}}
+                  <a href="/tag/{{$k}}">{{$v}}</a>
+              {{end}}
+              <!--<a href="#">orci</a>, <a href="#">lectus</a>, <a href="#">varius</a>, <a href="#">turpis</a>-->
+          </p>
+          <p><a href="#"><strong>评论 ({{.article.Comment_count}})</strong></a>  <span>&nbsp;&bull;&nbsp;</span>  {{.article.FormatPublishTime "Jan 02, 2006"}}  <span>&nbsp;&bull;&nbsp;</span>  <a href="#"><strong>Edit</strong></a></p>
         </div>
         <div class="article">
           <h2><span>{{.article.Comment_count}}</span> Responses</h2><div class="clr"></div>
           {{range .commentList}}
             <div class="comment">
               <a href="#"><img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" /></a>
-              <p><a href="#">{{.Name}}</a> Says:<br />April 20th, 2009 at 2:17 pm</p>
+              <p><a href="#">{{.Name}}</a> Says:<br />{{.FormatAtime "Jan 02th, 2006 at 15:04"}}</p>
               <p>{{.Content}}</p>
             </div>
           {{end}}

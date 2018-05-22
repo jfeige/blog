@@ -5,7 +5,7 @@
           <div class="clr"></div>
           <ul class="sb_menu">
           {{range $k, $v := .categoryList}}
-              <li><a href="/category/{{$v.Id}}">{{$v.Name}}({{$v.Article_cnt}})</a></li>
+              <li><a href="/category/{{$v.Id}}/1">{{$v.Name}}({{$v.Article_cnt}})</a></li>
           {{end}}
           </ul>
       </div>
@@ -28,9 +28,13 @@
           </ul>
       </div>
       <div class="gadget">
-          <h2>Wise Words</h2>
+          <h2>标签</h2>
           <div class="clr"></div>
-          <p>   <img src="/static/img/test_1.gif" alt="image" width="18" height="17" /> <em>We can let circumstances rule us, or we can take charge and rule our lives from within </em>.<img src="/static/img/test_2.gif" alt="image" width="18" height="17" /></p>
+          <p>
+              {{range $k, $v := .tagList}}
+                  <a href="/tag/{{$v.Id}}" title="{{$v.Tag}}">{{$v.Tag}}</a>
+              {{end}}
+          </p>
           <p style="float:right;"><strong>Earl Nightingale</strong></p>
       </div>
   </div>
