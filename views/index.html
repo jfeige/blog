@@ -15,17 +15,25 @@
       <div class="mainbar">
         {{range .articleList}}
             <div class="article">
-                <h2><a href="/article/{{.Id}}"><span>{{.Title}}</span></a></h2>
+              <h2><a href="/article/{{.Id}}"><span>{{.Title}}</span></a></h2>
               <br/>
               <div class="clr"></div>
               <div class="clr"></div>
               {{.Content}}
-              <p class="dateview"><span>2018-05-20</span><span>作者：杨青</span><span>分类：<a href="/" target="_blank">心得笔记</a></span><span>阅读(112)</span><span>评论(210)</span></p>
+              <p/>
+              <p class="dateview"><span>{{.FormatPublishTime "Jan 02, 2006"}}</span><span>作者：{{.User}}</span><span>分类：<a href="/" target="_blank">{{.Category}}</a></span><span>阅读({{.Read_count}})</span><span>评论({{.Comment_count}})</span></p>
+              <p/>
               <p><a href="/article/{{.Id}}">Read more </a></p>
             </div>
         {{end}}
         <div class="article" style="padding:5px 20px 2px 20px; background:none; border:0;">
-          <p>Page 1 of 2 <span class="butons"><a href="#">3</a><a href="#">2</a> <a href="#" class="active">1</a></span></p>
+          <p>Page {{.page}} of {{.allPage}}
+              <span class="butons">
+                {{range $p, $v := .pages}}
+                  <a href="{{$.url}}/{{$v}}" {{if eq $.page $v}}class="active"{{end}}>{{$v}}</a>
+                {{end}}
+              </span>
+          </p>
         </div>
       </div>
       {{template "right" .}}

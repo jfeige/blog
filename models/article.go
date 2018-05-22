@@ -4,6 +4,9 @@ import (
 	"strconv"
 	"github.com/garyburd/redigo/redis"
 	"sync"
+	log "github.com/alecthomas/log4go"
+	"strings"
+	"time"
 )
 //文章
 type Article struct {
@@ -12,11 +15,11 @@ type Article struct {
 	Content string `redis:"content"`
 	Userid int  `redis:"userid"`
 	Categoryid int `redis:"categoryid"`
-	Tagid int `redis:"tagid"`
+	Tagid string `redis:"tagid"`
 	Read_count int `redis:"read_count"`
 	Comment_count int `redis:"comment_count"`
-	Publish_time int `redis:"publish_time"`
-	Publish_date int `redis:"publish_date"`
+	Publish_time int64 `redis:"publish_time"`
+	Publish_date int64 `redis:"publish_date"`
 	Isshow int `redis:"isshow"`
 }
 
@@ -52,6 +55,7 @@ func (this *Article) Load(id int) error{
 	return nil
 }
 
+
 /**
 	多线程加载Article对象
  */
@@ -63,4 +67,68 @@ func MultipleLoadArticle(id int,position int,article_list []*Article,wg *sync.Wa
 		article_list[position] = article
 	}
 	return
+}
+/**
+	获取作者
+ */
+func (this *Article) User()string{
+	return "张三"
+}
+
+/**
+	获取所属类别
+ */
+func (this *Article) Category()string{
+	catetory := new(Category)
+	err := catetory.Load(this.Categoryid)
+	if err != nil{
+		log.Error("catetory.Load() has error:%v",err)
+		return ""
+	}
+	return catetory.Name
+}
+
+/**
+	获取所属标签
+ */
+func (this *Article) Tag()map[int]string{
+	tags := make(map[int]string)
+	ids := strings.Split(this.Tagid,",")
+	for _,tmpId := range ids{
+		id,_ := strconv.Atoi(tmpId)
+		tag := new(Tag)
+		err := tag.Load(id)
+		if err != nil{
+			log.Error("tag.Load() has error:%v",err)
+			continue
+		}
+		tags[id] = tag.Tag
+	}
+	return tags
+}
+
+/**
+	格式化日期和时间
+ */
+func (this *Article) PublishTime(flags ...int)string{
+	var flag = 0		//0:publish_time;1:publish_date
+	var ftime string
+	if len(flags) > 0{
+		flag = flags[0]
+	}
+	if flag == 0{
+		ftime = time.Unix(this.Publish_time,0).Format("2006-01-02 15:04:05")
+	}else{
+		ftime = time.Unix(this.Publish_time,0).Format("2006-01-02")
+	}
+
+	return ftime
+}
+
+/**
+	按照给定的格式格式化日期和时间
+ */
+func (this *Article) FormatPublishTime(format string)string{
+
+	return time.Unix(this.Publish_time,0).Format(format)
 }

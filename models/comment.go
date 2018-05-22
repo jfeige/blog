@@ -5,6 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"sync"
 	"fmt"
+	"time"
 )
 //评论
 type Comment struct {
@@ -60,4 +61,12 @@ func MultipleLoadComment(id int,position int,comment_list []*Comment,wg *sync.Wa
 		comment_list[position] = comment
 	}
 	return
+}
+
+
+
+func (this *Comment) FormatAtime(format string)string{
+
+	return time.Unix(int64(this.Atime),0).Format(format)
+
 }
