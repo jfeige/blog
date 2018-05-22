@@ -40,13 +40,10 @@ func FLink_List()[]int{
 			rconn.Send("ZADD",rargs...)
 		}
 	}
-	cnt,_ := redis.Int(rconn.Do("ZCARD",key))
-	if cnt > 0{
-		list,err = redis.Ints(rconn.Do("ZRANGE",key,0,-1))
-		if err != nil{
-			log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
-			return list
-		}
+	list,err = redis.Ints(rconn.Do("ZRANGE",key,0,-1))
+	if err != nil{
+		log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
+		return list
 	}
 	return list
 }

@@ -1,49 +1,45 @@
 package models
 
 import (
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	log "github.com/alecthomas/log4go"
+	"fmt"
 )
 
-/**
-	根据文章id获取评论id列表
- */
-func CommentList(articleid int)[]int{
+func TagList()[]int{
 	list := make([]int,0)
-	key := "commentList"
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
-
+	key := "taglist"
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
-
 	if !exists{
-		sql := "select id,atime from b_comment order by atime desc"
 		db := conn.GetMysqlConn()
+		sql := "select id from b_tag order by id asc"
 		rows,err := db.Query(sql)
 		if err != nil{
-			log.Error("db.Query has error:%v",err)
+			log.Error("db.Query() has error:%v",err)
 			return list
 		}
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
-		var id,atime int
+		var id int
 		for rows.Next(){
-			err := rows.Scan(&id,&atime)
+			err = rows.Scan(&id)
 			if err != nil{
-				log.Error(fmt.Sprintf("rows.Scan has error:%v",err))
 				continue
 			}
-			rargs = append(rargs,atime,id)
+			rargs = append(rargs,id,id)
 		}
 		if len(rargs) > 1{
 			rconn.Send("ZADD",rargs...)
 		}
 	}
-	list,err = redis.Ints(rconn.Do("ZREVRANGE",key,0,-1))
+
+	list,err = redis.Ints(rconn.Do("ZRANGE",key,0,-1))
 	if err != nil{
 		log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
 		return list
 	}
+
 	return list
 }

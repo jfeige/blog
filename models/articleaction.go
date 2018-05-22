@@ -7,20 +7,74 @@ import (
 	"fmt"
 )
 
+
 /**
-	博客列表
+	文章总数
  */
-func ArticleList(args map[string]interface{})[]int{
+func ArticleCnt(categoryId ...int)int{
+	var cid,cnt int
+	if len(categoryId) > 0{
+		cid = categoryId[0]
+	}
+	rconn := conn.GetRedisConn()
+	defer rconn.Close()
+	key := "article_cnt:" + strconv.Itoa(cid)
+	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
+	if !exists{
+		db := conn.GetMysqlConn()
+		pargs := make([]interface{},0)
+		sql := "select count(1) from b_article "
+		if cid > 0{
+			sql = "select count(1) from b_article where categoryid=? "
+			pargs = append(pargs,cid)
+		}
+		stmt,err := db.Prepare(sql)
+		if err != nil{
+			log.Error(fmt.Sprintf("db.Prepare has error:",err))
+			return	0
+		}
+		defer stmt.Close()
+		row := stmt.QueryRow(pargs...)
+		err = row.Scan(&cnt)
+		if err != nil{
+			log.Error(fmt.Sprintf("row.Scan has error:",err))
+			return	0
+		}
+		err = rconn.Send("set",key,cnt)
+		if err != nil{
+			log.Error(fmt.Sprintf("rconn.Send has error:",err))
+			return	cnt
+		}
+	}
+
+	cnt,err := redis.Int(rconn.Do("get",key))
+	if err != nil{
+		log.Error(fmt.Sprintf("redis.Int has error:%v",err))
+		return 0
+	}
+	return cnt
+
+}
+
+
+/**
+	文章列表
+ */
+func ArticleList(args map[string]int)[]int{
 	list := make([]int,0)
-	pagesize := blog_pagesize
-	page := args["page"].(int)
-	isshow := args["isshow"].(int)	//博客的显示控制 -1:全部;1:显示;0:隐藏
+	pagesize := args["pagesize"]
+	isshow := args["isshow"]
+	offset := args["offset"]
+	cateid,ok := args["cateid"]		//分类id
+	if !ok || cateid < 0{
+		cateid = 0
+	}
 
 	if !InArray(isshow,[]int{-1,0,1}){
 		isshow = -1
 	}
 
-	key := "articleList:" + strconv.Itoa(isshow)
+	key := "articleList:"  + strconv.Itoa(cateid)
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
@@ -28,9 +82,9 @@ func ArticleList(args map[string]interface{})[]int{
 		db := conn.GetMysqlConn()
 		pargs := make([]interface{},0)
 		sql := "select id,publish_time from b_article order by publish_time desc "
-		if isshow > -1{
-			sql = "select id,publish_time from b_article order by publish_time where isshow=? where desc "
-			pargs = append(pargs,isshow)
+		if cateid > 0{
+			sql = "select id,publish_time from b_article where categoryid=? order by publish_time desc "
+			pargs = append(pargs,cateid)
 		}
 		stmt,err := db.Prepare(sql)
 		if err != nil{
@@ -39,7 +93,7 @@ func ArticleList(args map[string]interface{})[]int{
 		}
 		defer stmt.Close()
 
-		rows,err := stmt.Query()
+		rows,err := stmt.Query(pargs...)
 		if err != nil{
 			log.Error(fmt.Sprintf("stmt.Query has error:",err))
 			return	list
@@ -56,16 +110,12 @@ func ArticleList(args map[string]interface{})[]int{
 		}
 	}
 
-	cnt,_ := redis.Int(rconn.Do("ZCARD",key))
-	if cnt > 0{
-		offset := (page - 1) * pagesize
-		limit := offset + pagesize - 1
-		var args = []interface{}{key, offset, limit}
-		list,err = redis.Ints(rconn.Do("ZREVRANGE",args...))
-		if err != nil{
-			log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
-			return list
-		}
+	limit := offset + pagesize - 1
+	var params = []interface{}{key, offset, limit}
+	list,err = redis.Ints(rconn.Do("ZREVRANGE",params...))
+	if err != nil{
+		log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
+		return list
 	}
 	return list
 }

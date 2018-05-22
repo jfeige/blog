@@ -8,7 +8,7 @@ import (
 )
 
 var(
-	blog_pagesize int
+	BlogPageSize int
 )
 
 var(
@@ -74,8 +74,8 @@ func (this *connect) GetMysqlConn()*sql.DB{
 	读取其他配置
  */
 func initDefaultConfig()error {
-	bolg_pagesize, _ := lcf.Int("bolg_pagesize")
-	if bolg_pagesize <= 0 {
+	BlogPageSize, _ = lcf.Int("bolg_pagesize")
+	if BlogPageSize <= 0 {
 		return errors.New("Can't not find default parameters:bolg_pagesize")
 	}
 	return nil
