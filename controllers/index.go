@@ -15,7 +15,6 @@ func Index(context *gin.Context){
 
 	var wg sync.WaitGroup
 	//文章列表
-
 	tmpPage := context.Param("page")
 	page,err := strconv.Atoi(tmpPage)
 	if err != nil || page < 1{

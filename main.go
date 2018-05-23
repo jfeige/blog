@@ -11,6 +11,7 @@ import (
 
 
 func main() {
+
 	err := models.InitBaseConfig("./conf/blog.ini")
 	if err != nil{
 		fmt.Println(err)
@@ -26,11 +27,17 @@ func main() {
 	//文章详情页面
 	router.GET("/article/:arteid",FrontWare(), controllers.Article)
 	//类别页面
-	router.GET("/category/:cateid/:page",FrontWare(), controllers.CategoryIndex)
+	router.GET("/category/:cateid/*page",FrontWare(), controllers.CategoryIndex)
 	//标签页面
-	router.GET("/tag/:tagId",FrontWare(), controllers.Index)
+	router.GET("/tag/*tagid",FrontWare(), controllers.TagIndex)
 	//留言板
+
+	//404处理
+	router.NoRoute(controllers.ErrNoRoute)
+
+
 	http.ListenAndServe(":8080", router)
+
 }
 
 
