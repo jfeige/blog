@@ -46,7 +46,7 @@ func initRouter()*gin.Engine{
 	//标签页面
 	router.GET("/tag/*tagid",FrontWare(), controllers.TagIndex)
 	//添加一条回复
-	router.POST("/comment/add",controllers.AddComment)
+	router.POST("/comment/add",SessionWare(),controllers.AddComment)
 	//留言板
 
 	//跳转到登录页面

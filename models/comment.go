@@ -10,10 +10,10 @@ import (
 //评论
 type Comment struct {
 	Id int `redis:"id"`
-	Articleid string `redis:"articleid"`
+	Articleid int `redis:"articleid"`
 	Name string `redis:"name"`
 	Content string  `redis:"content"`
-	Atime int `redis:"atime"`
+	Atime int64 `redis:"atime"`
 }
 
 /**

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	log "github.com/alecthomas/log4go"
+	"time"
+	"strconv"
 )
 
 /**
@@ -11,18 +13,18 @@ import (
  */
 func CommentList(articleid int)[]int{
 	list := make([]int,0)
-	key := "commentList"
+	key := "commentList:" + strconv.Itoa(articleid)
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
 
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 
 	if !exists{
-		sql := "select id,atime from b_comment order by atime desc"
+		sql := "select id,atime from b_comment where articleid=? order by atime desc"
 		db := conn.GetMysqlConn()
-		rows,err := db.Query(sql)
+		rows,err := db.Query(sql,articleid)
 		if err != nil{
-			log.Error("db.Query has error:%v",err)
+			log.Error("CommentList has error:%v",err)
 			return list
 		}
 		rargs := make([]interface{},0)
@@ -53,6 +55,39 @@ func CommentList(articleid int)[]int{
 	添加一条回复
  */
 
-func (this *Comment) addComment(){
+func AddComment(aid int,name interface{},content string){
+	sql := "insert into b_comment(articleid,name,content,atime) values(?,?,?,?)"
+	db := conn.GetMysqlConn()
+
+	tx,err := db.Begin()
+	if err != nil{
+		log.Error("AddComment has error.aid:%d,name:%v,content:%s,error:%v",aid,name,content,err)
+		return
+	}
+	stmt,err := tx.Prepare(sql)
+	if err != nil{
+		log.Error("AddComment has error. aid:%d,name:%v,content;%s,error:%v",aid,name,content,err)
+		return
+	}
+	stmt.Exec(aid,name,content,time.Now().Unix())
+
+	sql = "update b_article set comment_count=comment_count+1 where id=?"
+	up_stmt,err := tx.Prepare(sql)
+	if err != nil{
+		log.Error("AddComment has error. aid:%d,name:%v,content;%s,error:%v",aid,name,content,err)
+		tx.Rollback()
+		return
+	}
+	up_stmt.Exec(aid)
+
+	tx.Commit()
+
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	keys := make([]string,0)
+	keys = append(keys,"commentList:" + strconv.Itoa(aid))
+	keys = append(keys,"article:" + strconv.Itoa(aid))
+	rconn.Do("DEL",keys)
 
 }

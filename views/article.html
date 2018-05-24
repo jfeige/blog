@@ -4,6 +4,7 @@
 <title>{{.webSet.Sitename}}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link href="/static/css/style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/static/js/jquery.js"></script>
 
 </head>
 <body>
@@ -24,30 +25,30 @@
           </p>
           <p><a href="#"><strong>评论 ({{.article.Comment_count}})</strong></a>  <span>&nbsp;&bull;&nbsp;</span>  {{.article.FormatPublishTime "Jan 02, 2006"}}  <span>&nbsp;&bull;&nbsp;</span>  <a href="#"><strong>Edit</strong></a></p>
         </div>
-        <div class="article">
-          <h2><span>{{.article.Comment_count}}</span> Responses</h2><div class="clr"></div>
-          {{range .commentList}}
-            <div class="comment">
-              <a href="#"><img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" /></a>
-              <p><a href="#">{{.Name}}</a> Says:<br />{{.FormatAtime "Jan 02th, 2006 at 15:04"}}</p>
-              <p>{{.Content}}</p>
+        {{if gt .article.Comment_count 0}}
+            <div class="article">
+              <h2><span>{{.article.Comment_count}}</span> Responses</h2><div class="clr"></div>
+              {{range .commentList}}
+                <div class="comment">
+                  <a href="#"><img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" /></a>
+                  <p><a href="#">{{.Name}}</a> Says:<br />{{.FormatAtime "Jan 02th, 2006 at 15:04"}}</p>
+                  <p>{{.Content}}</p>
+                </div>
+              {{end}}
             </div>
-          {{end}}
-        </div>
+        {{end}}
         <div class="article">
           <h2>添加新回复</h2><div class="clr"></div>
-          <form action="#" method="post" id="leavereply">
             <ol>
                 <li>
                   <label for="message">内容</label>
                   <textarea id="message" name="message" rows="8" cols="50"></textarea>
                 </li>
                 <li>
-                  <input type="image" name="imageField" id="imageField" src="/static/img/submit.gif" class="send" />
+                  <input type="image" name="imageField" id="imageField" src="/static/img/submit.gif" class="send" onclick="recommd({{.article.Id}});"/>
                   <div class="clr"></div>
                 </li>
             </ol>
-          </form>
         </div>
       </div>
       {{template "right" .}}
@@ -56,6 +57,38 @@
   </div>
 
 </div>
+
+<script type="text/javascript">
+    function recommd(aid){
+        content = $('#message').attr('value');
+        if($.trim(content) == ""){
+            alert("回复内容不能为空");
+            return
+        }
+        var aj = $.ajax( {
+            url:'/comment/add',// 跳转到 action
+            data:{
+                content : content,
+                aid : aid
+            },
+            type:'post',
+            cache:false,
+            dataType:'json',
+            success:function(data) {
+                if(data.errcode == 0 ){
+                    alert("评论成功")
+                    alert("/article/" + aid);
+                    window.location.href="/article/" + aid
+                }else{
+                    alert("评论失败，请重试")
+                }
+            },
+            error : function() {
+                alert("异常！");
+            }
+        });
+    }
+</script>
 
 </body>
 </html>
