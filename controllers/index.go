@@ -92,3 +92,12 @@ func Article(context *gin.Context){
 
 	context.HTML(http.StatusOK,"article.html",gh)
 }
+
+
+
+/**
+	登录		//ajax请求
+ */
+func Login(context *gin.Context){
+	context.HTML(http.StatusOK,"login.html",nil)
+}
