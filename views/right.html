@@ -19,15 +19,6 @@
           </ul>
       </div>
       <div class="gadget">
-          <h2><span>友情链接</span></h2>
-          <div class="clr"></div>
-          <ul class="ex_menu">
-          {{range $k, $v := .flinkList}}
-              <li><a href="{{$v.Weburl}}" title="{{$v.Webname}}">{{$v.Webname}}</a></li>
-          {{end}}
-          </ul>
-      </div>
-      <div class="gadget">
           <h2>标签</h2>
           <div class="clr"></div>
           <p>
@@ -36,6 +27,15 @@
               {{end}}
           </p>
           <p style="float:right;"><strong>Earl Nightingale</strong></p>
+      </div>
+      <div class="gadget">
+          <h2><span>友情链接</span></h2>
+          <div class="clr"></div>
+          <ul class="ex_menu">
+          {{range $k, $v := .flinkList}}
+              <li><a href="{{$v.Weburl}}" title="{{$v.Webname}}">{{$v.Webname}}</a></li>
+          {{end}}
+          </ul>
       </div>
   </div>
 {{end}}

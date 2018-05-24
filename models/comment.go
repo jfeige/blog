@@ -3,8 +3,8 @@ package models
 import (
 	"strconv"
 	"github.com/garyburd/redigo/redis"
+	log "github.com/alecthomas/log4go"
 	"sync"
-	"fmt"
 	"time"
 )
 //评论
@@ -36,14 +36,14 @@ func (this *Comment) Load(id int) error{
 	db := conn.GetMysqlConn()
 	stmt,err := db.Prepare(sql)
 	if err != nil{
-		fmt.Println("--1--",err)
+		log.Error("db.Prepare() has error:%v",err)
 		return err
 	}
 	defer stmt.Close()
 	row := stmt.QueryRow(id)
 	err = row.Scan(&this.Id,&this.Articleid,&this.Name,&this.Content,&this.Atime)
 	if err != nil{
-		fmt.Println("--2-",err)
+		log.Error("row.Scan() has error:%v",err)
 		return err
 	}
 	rconn.Send("HMSET",redis.Args{}.Add(key).AddFlat(this)...)

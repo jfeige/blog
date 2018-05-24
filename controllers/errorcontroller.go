@@ -10,10 +10,11 @@ import (
  */
 func ErrNoRoute(context *gin.Context){
 
-	gh := make(map[string]interface{})
+	//读取中间件传来的参数
+	tmp_gh,_ := context.Get("gh")
+	gh := tmp_gh.(map[string]interface{})
 	gh["errcode"] = "404"
 	gh["errinfo"] = "页面找不到了!"
-
 
 	context.HTML(http.StatusOK,"error.html",gh)
 

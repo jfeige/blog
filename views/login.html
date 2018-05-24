@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <meta charset="utf-8">
+    <title>登录</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/login.css" />
+    <script type="text/javascript" src="/static/js/jquery.js"></script>
+</head>
+<body>
+<div class="main">
+    <div class="mainin">
+        <div class="mainin1">
+            <ul>
+                <li><span>用户名：</span><input name="loginName" type="text" id="loginName" placeholder="登录名" class="SearchKeyword"></li>
+                <li><span>密码：</span><input type="password" name="Possword" id="Possword" placeholder="密码" class="SearchKeyword2"></li>
+                <li><button class="tijiao" onclick="login();">提交</button></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function login(){
+        loginname = $('#loginName').attr('value');
+        password = $('#Possword').attr('value');
+        if($.trim(loginname) == "" || $.trim(password) == ""){
+            alert("登录名和密码不能为空");
+            return
+        }
+         var aj = $.ajax( {
+             url:'/login',// 跳转到 action
+             data:{
+                  loginname : loginname,
+                  password : password
+             },
+             type:'post',
+             cache:false,
+             dataType:'json',
+             success:function(data) {
+                 if(data.ret == true ){
+                     alert("登录失败")
+                     window.location.href=data.url
+                 }else{
+                         alert("登录失败")
+                 }
+                 window.location.href=data.url
+                 },
+             error : function() {
+                  alert("异常！");
+             }
+         });
+    }
+</script>
+</body>
+</html>

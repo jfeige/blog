@@ -22,24 +22,96 @@ func main() {
 	router.LoadHTMLGlob("views/*")
 	router.Static("/static", "./static")
 	//首页
-	router.GET("/",FrontWare(),controllers.Index)
-	router.GET("/index/:page",FrontWare(),controllers.Index)
+	router.GET("/",FrontWare(),SessionWare(),controllers.Index)
+	router.GET("/index/*page",SessionWare(),FrontWare(),controllers.Index)
 	//文章详情页面
 	router.GET("/article/:arteid",FrontWare(), controllers.Article)
 	//类别页面
 	router.GET("/category/:cateid/*page",FrontWare(), controllers.CategoryIndex)
 	//标签页面
 	router.GET("/tag/*tagid",FrontWare(), controllers.TagIndex)
+	//添加一条回复
+	router.POST("/comment/add",controllers.AddComment)
 	//留言板
 
+
+	//跳转到登录页面
+	router.GET("/login",controllers.Login)
+
+	router.POST("/login",SessionWare(),controllers.Login)
 	//404处理
-	router.NoRoute(controllers.ErrNoRoute)
+	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
 
 
 	http.ListenAndServe(":8080", router)
 
 }
 
+/**
+	Session中间件
+ */
+func SessionWare()gin.HandlerFunc{
+	return func(c *gin.Context){
+		var session *models.Session
+		sessid,_ := c.Cookie("session_id")
+		if sessid == ""{
+			session = models.NewSession()
+		}else{
+			session = models.NewSession(sessid)
+		}
+		cookie := &http.Cookie{
+			Name:     "session_id",
+			Value:    session.SessionID(),
+			Path:     "/",
+			HttpOnly: true,
+		}
+		if session.Has("uid"){
+			session.Expire()
+		}
+
+		http.SetCookie(c.Writer, cookie)
+
+		c.Set("session", session)
+		c.Next()
+	}
+}
+
+/**
+	没有找到路由专用中间件
+ */
+func NoRouteWare()gin.HandlerFunc{
+	return func(c *gin.Context){
+
+		var wg sync.WaitGroup
+
+		//网站设置&&个人档案
+		webSet := new(models.Webset)
+		webSet.Load()
+
+
+		//推荐阅读
+		args := make(map[string]int)
+		args["page"] = 1
+		args["isshow"] = -1
+		args["pagesize"] = 10
+		args["offset"] = 0
+		article_ids := models.ArticleList(args)
+		articleList := make([]*models.Article,len(article_ids))
+		for pos,id := range article_ids{
+			wg.Add(1)
+			models.MultipleLoadArticle(id,pos,articleList,&wg)
+		}
+		wg.Wait()
+
+
+		gh := make(map[string]interface{})
+		gh["webSet"] = webSet
+		gh["articleList"] = articleList
+
+		c.Set("gh", gh)
+		c.Next()
+	}
+}
 
 /**
 	前台页面专用中间件，用于读取页面右侧数据

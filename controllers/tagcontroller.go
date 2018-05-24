@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 )
-//o(╥﹏╥)o
+
 
 func TagIndex(context *gin.Context){
 

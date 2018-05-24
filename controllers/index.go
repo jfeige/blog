@@ -7,6 +7,7 @@ import (
 	"sync"
 	"strconv"
 	"math"
+	"fmt"
 )
 
 
@@ -91,4 +92,38 @@ func Article(context *gin.Context){
 	gh["article"] = article
 
 	context.HTML(http.StatusOK,"article.html",gh)
+}
+
+
+
+/**
+	登录		//ajax请求
+ */
+func Login(context *gin.Context){
+	if context.Request.Method == "POST"{
+		var url = "/index"
+		loginname,_ := context.GetPostForm("loginname")
+		password,_ := context.GetPostForm("password")
+
+		user,login_ret := models.Login(loginname,password)
+		if login_ret {
+			//登录成功，写入session
+			tmpSession,_ := context.Get("session")
+			session := tmpSession.(*models.Session)
+			session.SetSession("uid",user.Id)
+			session.SetSession("name",user.Name)
+			session.SetSession("nickname",user.Nickname)
+
+			fmt.Println("-------",session.SessionID())
+		}
+
+		context.JSON(http.StatusOK,gin.H{
+			"ret":login_ret,
+			"url":url,
+		})
+	}else{
+		//跳转到登录页面
+		context.HTML(http.StatusOK,"login.html",nil)
+	}
+
 }

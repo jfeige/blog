@@ -47,3 +47,12 @@ func CommentList(articleid int)[]int{
 	}
 	return list
 }
+
+
+/**
+	添加一条回复
+ */
+
+func (this *Comment) addComment(){
+
+}

@@ -49,6 +49,8 @@ a.rm, a.com { margin-left:8px; padding:9px 12px; background:url(/static/img/a_bg
 .content .mainbar .article span.butons a.active {  border:1px solid #ebe8e8;  background:#40b5ff; color:#fff; text-decoration:none;}
 .content .sidebar { margin:0; padding:0; float:right; }
 .content .sidebar .gadget { margin:0 0 20px 0; padding:30px 20px; width:230px; border:1px solid #d8d6d6; background:#fefefe url(/static/img/post_bg.gif) top repeat-x;}
+.content .sidebarerr { margin:0; padding:0; float:left; }
+.content .sidebarerr .gadget { margin:0 0 20px 0; padding:30px 20px; width:550px; border:1px solid #d8d6d6; background:#fefefe url(/static/img/post_bg.gif) top repeat-x;}
 ul.sb_menu, ul.ex_menu { margin:0; padding:0; list-style:none; color:#959595;}
 ul.sb_menu li, ul.ex_menu li { margin:0; border-bottom:1px solid #dedede;}
 ul.sb_menu li { padding:4px 0 4px 12px; width:220px;}
@@ -57,6 +59,11 @@ ul.sb_menu li a, ul.ex_menu li a { color:#959595; text-decoration:none; margin-l
 ul.sb_menu li a:hover, ul.ex_menu li a:hover { color:#2cadff; text-decoration:underline;}
 ul.sb_menu li a:hover { text-decoration:underline;}
 ul.ex_menu li a:hover { text-decoration:none;}
+
+
+ul.sb_menu_login, ul.sb_menu_login { margin:0; padding:0; list-style:none; color:#959595;}
+ul.sb_menu_login li { padding:4px 0 4px 12px; width:220px;}
+ul.sb_menu_login li { padding:4px 0 8px 12px;}
 
 /* subpages */
 .content .mainbar .comment { margin:0; padding:16px 0 0 0;}
@@ -96,3 +103,14 @@ ol li .send { margin:16px 0 0 0;}
 .dateview a{color:#838383;}
 .dateview a:hover{ color:#333;}
 .dateview span{ margin:0 25px}
+
+
+.dlk {
+    width: 354px;
+    height: 328px;
+    background: url(/static/img/tp03_20140320.png) no-repeat;
+    position: absolute;
+    right: 180px;
+    top: 120px;
+    color: #999;
+}
