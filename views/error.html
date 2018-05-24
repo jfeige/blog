@@ -26,27 +26,18 @@
                 </div>
             </div>
 
-        <div class="sidebar">
-
+        <div class="sidebarerr">
             <div class="gadget">
-                <h2><span>近期文章</span></h2>
+                <h2><span>推荐阅读</span></h2>
                 <div class="clr"></div>
                 <ul class="ex_menu">
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
-                    <li><a href="http://www.baidu.com" title="百度">百度</a></li>
+                    {{range .articleList}}
+                    <li>
+                        <h3><a href="/article/{{.Id}}" title="{{.Title}}">{{.Title}}</a></h3>
+                        <br/>
+                        作者:{{.User}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;阅读:({{.Read_count}})&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;评论({{.Comment_count}})
+                    </li>
+                    {{end}}
                 </ul>
             </div>
         </div>
