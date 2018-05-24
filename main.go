@@ -114,6 +114,43 @@ func NoRouteWare()gin.HandlerFunc{
 }
 
 /**
+	没有找到路由专用中间件
+ */
+func NoRouteWare()gin.HandlerFunc{
+	return func(c *gin.Context){
+
+		var wg sync.WaitGroup
+
+		//网站设置&&个人档案
+		webSet := new(models.Webset)
+		webSet.Load()
+
+
+		//推荐阅读
+		args := make(map[string]int)
+		args["page"] = 1
+		args["isshow"] = -1
+		args["pagesize"] = 10
+		args["offset"] = 0
+		article_ids := models.ArticleList(args)
+		articleList := make([]*models.Article,len(article_ids))
+		for pos,id := range article_ids{
+			wg.Add(1)
+			models.MultipleLoadArticle(id,pos,articleList,&wg)
+		}
+		wg.Wait()
+
+
+		gh := make(map[string]interface{})
+		gh["webSet"] = webSet
+		gh["articleList"] = articleList
+
+		c.Set("gh", gh)
+		c.Next()
+	}
+}
+
+/**
 	前台页面专用中间件，用于读取页面右侧数据
  */
 func FrontWare() gin.HandlerFunc {
