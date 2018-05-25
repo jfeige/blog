@@ -12,9 +12,11 @@ ul,li{ list-style-type:none;}
 .field-icon-right .icon{ bottom:0px; top:auto}
 .logo{ float:left; color:#FFF; margin-top:10px; line-height:45px;}
 .logo img{ float:left; margin-right:10px;}
+<<<<<<< HEAD
 .loginbox { background:url(/static/img/manage/tmbg-white.png); border:0px;}
 /********头部******/
 .header{height:70px; overflow:hidden; background:url(/static/img/manage/bg.jpg) no-repeat 0 -1000px; }
+.loginbox { background:url(../images/tmbg-white.png); border:0px;}
 .head-l{ float:left; margin-top:17px; margin-left:15px; }
 .head-l .button{ padding:8px 15px;}
 .head-l .bg-blue:hover{ background-color:#03b6fd;}
