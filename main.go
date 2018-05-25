@@ -59,6 +59,9 @@ func initRouter()*gin.Engine{
 	router.GET("/manage/index",NoSessionWare(),controllers.MIndex)
 	router.GET("/manage/webset",controllers.Webset)
 
+	router.GET("/manage/tag",controllers.Webset)
+	router.POST("/manage/tag",controllers.Webset)
+
 	//404处理
 	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
 
