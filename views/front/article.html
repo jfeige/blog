@@ -77,14 +77,14 @@
             success:function(data) {
                 if(data.errcode == 0 ){
                     alert("评论成功")
-                    alert("/article/" + aid);
-                    window.location.href="/article/" + aid
                 }else{
                     alert("评论失败，请重试")
                 }
+                window.location.href="/article/" + aid
             },
             error : function() {
-                alert("异常！");
+                alert("数据库异常，请稍后重试！");
+                window.location.href="/article/" + aid
             }
         });
     }

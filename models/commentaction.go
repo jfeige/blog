@@ -85,9 +85,9 @@ func AddComment(aid int,name interface{},content string){
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
-	keys := make([]string,0)
+	keys := make([]interface{},0)
 	keys = append(keys,"commentList:" + strconv.Itoa(aid))
 	keys = append(keys,"article:" + strconv.Itoa(aid))
-	rconn.Do("DEL",keys)
+	rconn.Do("DEL",keys...)
 
 }

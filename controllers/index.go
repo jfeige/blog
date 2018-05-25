@@ -58,7 +58,8 @@ func Index(context *gin.Context){
 	gh["page"] = page
 	gh["url"] = "/index"
 
-	context.HTML(http.StatusOK,"index.html",gh)
+
+	context.HTML(http.StatusOK,"front/index.html",gh)
 }
 
 //文章页面
@@ -101,7 +102,7 @@ func Article(context *gin.Context){
  */
 func Login(context *gin.Context){
 	if context.Request.Method == "POST"{
-		var url = "/index"
+		var url = "/manage/index"
 		loginname,_ := context.GetPostForm("loginname")
 		password,_ := context.GetPostForm("password")
 

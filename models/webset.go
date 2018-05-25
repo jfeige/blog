@@ -6,14 +6,17 @@ import
 )
 type Webset struct {
 	Id int `redis:"id"`
-	Banner string `redis:"banner"`
 	Sitename string `redis:"sitename"`
 	Sitedesc string `redis:"sitedesc"`
+	Siteurl  string `redis:"siteurl"`
+	Keywords string `redis:"keywords"`
+	Descri string `redis:"descri"`
 	Name string `redis:"name"`
-	Nickname string `redis:"nickname"`
-	Weburl string `redis:"weburl"`
+	Phone string `redis:"phone"`
+	Qq string `redis:"qq"`
+	Email string `redis:"email"`
 	Place string `redis:"place"`
-	Vocation string `redis:"vocation"`
+	Github string `redis:"github"`
 }
 
 
@@ -29,7 +32,7 @@ func (this *Webset) Load()error{
 			return nil
 		}
 	}
-	sql := "select id,banner,sitename,sitedesc,name,nickname,weburl,place,vocation from b_webset order by id desc limit 1"
+	sql := "select id,sitename,sitedesc,siteurl,keywords,descri,name,phone,qq,email,place,github from b_webset order by id desc limit 1"
 	db := conn.GetMysqlConn()
 	stmt,err := db.Prepare(sql)
 	if err != nil{
@@ -37,7 +40,7 @@ func (this *Webset) Load()error{
 	}
 	defer stmt.Close()
 	row := stmt.QueryRow()
-	err = row.Scan(&this.Id,&this.Banner,&this.Sitename,&this.Sitedesc,&this.Name,&this.Nickname,&this.Weburl,&this.Place,&this.Vocation)
+	err = row.Scan(&this.Id,&this.Sitename,&this.Sitedesc,&this.Siteurl,&this.Keywords,&this.Descri,&this.Name,&this.Phone,&this.Qq,&this.Email,&this.Place,&this.Github)
 	if err != nil{
 		return err
 	}

@@ -38,12 +38,11 @@
              dataType:'json',
              success:function(data) {
                  if(data.ret == true ){
-                     alert("登录成功")
-                     window.location.href=data.url
+                     alert("登录成功");
                  }else{
-                         alert("登录失败")
+                     alert("登录失败");
                  }
-                 window.location.href=data.url
+                 location.href = data.url;
                  },
              error : function() {
                   alert("异常！");
