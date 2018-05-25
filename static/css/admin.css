@@ -12,7 +12,6 @@ ul,li{ list-style-type:none;}
 .field-icon-right .icon{ bottom:0px; top:auto}
 .logo{ float:left; color:#FFF; margin-top:10px; line-height:45px;}
 .logo img{ float:left; margin-right:10px;}
-<<<<<<< HEAD
 .loginbox { background:url(/static/img/manage/tmbg-white.png); border:0px;}
 /********头部******/
 .header{height:70px; overflow:hidden; background:url(/static/img/manage/bg.jpg) no-repeat 0 -1000px; }
@@ -70,6 +69,11 @@ ul,li{ list-style-type:none;}
 
 .button.bg-main.icon-check-square-o{ padding:10px 30px;}
 .button.bg-main.icon-check-square-o:hover{ background:#08bbe1;}
+
+.button.bg-green.icon-trash-o{ margin:5px 10px;}
+.button.bg-green.icon-trash-o{ padding:10px 20px;}
+.button.bg-green.icon-trash-o:hover{ background:#08bbe1;}
+
 input[type="checkbox"], input[type="radio"]{ width:15px; height:15px; vertical-align:-3px; margin-right:5px;}
 
 textarea[name=content]{width:100%; height:500px; border:1px solid #ddd; border-radius:3px; -webkit-border-radius:3px;}
