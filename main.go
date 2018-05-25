@@ -32,7 +32,8 @@ func initRouter()*gin.Engine{
 
 
 	//模版文件和静态资源文件
-	router.LoadHTMLGlob("views/*")
+	router.LoadHTMLGlob("views/**/*")
+	//静态文件加载
 	router.Static("/static", "./static")
 
 
@@ -53,6 +54,11 @@ func initRouter()*gin.Engine{
 	router.GET("/login",controllers.Login)
 
 	router.POST("/login",SessionWare(),controllers.Login)
+
+	//后台首页
+	router.GET("/manage/index",NoSessionWare(),controllers.MIndex)
+	router.GET("/manage/webset",controllers.Webset)
+
 	//404处理
 	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
 
@@ -84,9 +90,38 @@ func SessionWare()gin.HandlerFunc{
 		if session.Has("uid"){
 			session.Expire()
 		}
-
 		http.SetCookie(c.Writer, cookie)
 
+		c.Set("session", session)
+		c.Next()
+	}
+}
+
+/**
+	没有session
+ */
+func NoSessionWare()gin.HandlerFunc{
+
+	return func(c *gin.Context){
+		var session *models.Session
+		sessid,_ := c.Cookie("session_id")
+		if sessid == ""{
+			session = models.NewSession()
+		}else{
+			session = models.NewSession(sessid)
+		}
+		cookie := &http.Cookie{
+			Name:     "session_id",
+			Value:    session.SessionID(),
+			Path:     "/",
+			HttpOnly: true,
+		}
+		http.SetCookie(c.Writer, cookie)
+		if !session.Has("uid"){
+			c.Redirect(http.StatusMovedPermanently,"/login")
+			return
+		}
+		session.Expire()
 		c.Set("session", session)
 		c.Next()
 	}
