@@ -19,7 +19,7 @@
       <div class="form-group">
           <div style="padding:10px 35px">
             {{range .tagList}}
-                <button class="button bg-green  icon-trash-o" type="button"> {{.Tag}}</button>
+                <button class="button bg-green  icon-trash-o" type="button" onclick="delTag({{.Id}})"> {{.Tag}}</button>
             {{end}}
           </div>
       </div>
@@ -44,5 +44,30 @@
     </form>
   </div>
 </div>
+<script language="JavaScript">
+    function delTag(id){
+        if(confirm("确定要删除该标签吗?")){
+            var aj = $.ajax( {
+                url:'/manage/delTag',// 跳转到 action
+                data:{id : id},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("删除成功");
+                    }else{
+                        alert("删除失败，请重新加载后再试");
+                    }
+                    window.location.href="/manage/tag"
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/tag"
+                },
+            });
+        }
+    }
+</script>
 </body></html>
 {{end}}

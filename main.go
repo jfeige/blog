@@ -59,6 +59,7 @@ func initRouter()*gin.Engine{
 	router.GET("/manage/index",NoSessionWare(),controllers.MIndex)
 	router.GET("/manage/webset",controllers.Webset)
 
+
 	router.GET("/manage/tag",controllers.Tag)
 	router.POST("/manage/tag",controllers.Tag)
 
@@ -67,6 +68,8 @@ func initRouter()*gin.Engine{
 
 	//添加标签
 	router.POST("/manage/addTag" )
+	//删除标签
+	router.POST("manage/delTag",controllers.DelTag)
 	//404处理
 	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
 

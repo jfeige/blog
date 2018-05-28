@@ -15,7 +15,6 @@ type Article struct {
 	Content string `redis:"content"`
 	Userid int  `redis:"userid"`
 	Categoryid int `redis:"categoryid"`
-	Tagid string `redis:"tagid"`
 	Read_count int `redis:"read_count"`
 	Comment_count int `redis:"comment_count"`
 	Publish_time int64 `redis:"publish_time"`
@@ -39,7 +38,7 @@ func (this *Article) Load(id int) error{
 			return nil
 		}
 	}
-	sql := "select id,title,content,userid,categoryid,tagid,read_count,comment_count,publish_time,publish_date,isshow from b_article where id=?"
+	sql := "select id,title,content,userid,categoryid,read_count,comment_count,publish_time,publish_date,isshow from b_article where id=?"
 	db := conn.GetMysqlConn()
 	stmt,err := db.Prepare(sql)
 	if err != nil{
@@ -47,7 +46,7 @@ func (this *Article) Load(id int) error{
 	}
 	defer stmt.Close()
 	row := stmt.QueryRow(id)
-	err = row.Scan(&this.Id,&this.Title,&this.Content,&this.Userid,&this.Categoryid,&this.Tagid,&this.Read_count,&this.Comment_count,&this.Publish_time,&this.Publish_date,&this.Isshow)
+	err = row.Scan(&this.Id,&this.Title,&this.Content,&this.Userid,&this.Categoryid,&this.Read_count,&this.Comment_count,&this.Publish_time,&this.Publish_date,&this.Isshow)
 	if err != nil{
 		return err
 	}
@@ -89,21 +88,66 @@ func (this *Article) Category()string{
 }
 
 /**
-	获取所属标签
+	得到该文章对应的标签id
+ */
+func (this *Article) GetTagIds() string{
+	var ids string
+	key := "tagids:" + strconv.Itoa(this.Id)
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	tmpIds,err:= redis.String(rconn.Do("GET",key))
+	if tmpIds != "" && err == nil{
+		return tmpIds
+	}
+	sql := "select t_id from b_actmapptags where a_id=?"
+	db := conn.GetMysqlConn()
+	stmt,err := db.Prepare(sql)
+	if err != nil{
+		log.Error("GetTagIds has error:%v",err)
+		return ids
+	}
+	defer stmt.Close()
+	rows,err := stmt.Query(this.Id)
+	if err != nil{
+		log.Error("GetTagIds has error:%v",err)
+		return ids
+	}
+	tmp_Ids := make([]string,0)
+	var tid string
+	for rows.Next(){
+		err = rows.Scan(&tid)
+		if err != nil{
+			continue
+		}
+		tmp_Ids = append(tmp_Ids,tid)
+	}
+	ids = strings.Join(tmp_Ids,",")
+	rconn.Do("SET",key,ids)
+	return ids
+}
+
+/**
+	解析所属标签
  */
 func (this *Article) Tag()map[int]string{
 	tags := make(map[int]string)
-	ids := strings.Split(this.Tagid,",")
-	for _,tmpId := range ids{
-		id,_ := strconv.Atoi(tmpId)
-		tag := new(Tag)
-		err := tag.Load(id)
-		if err != nil{
-			log.Error("tag.Load() has error:%v",err)
-			continue
+
+	tagId := this.GetTagIds()
+	if tagId != ""{
+		ids := strings.Split(tagId,",")
+		for _,tmpId := range ids{
+			id,_ := strconv.Atoi(tmpId)
+			tag := new(Tag)
+			err := tag.Load(id)
+			if err != nil{
+				log.Error("tag.Load() has error:%v",err)
+				continue
+			}
+			tags[id] = tag.Tag
 		}
-		tags[id] = tag.Tag
 	}
+
 	return tags
 }
 

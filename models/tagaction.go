@@ -88,3 +88,79 @@ func AddTag(context *gin.Context){
 
 	return
 }
+
+
+/**
+	删除标签
+ */
+func DelTag(id string)int {
+	var aids = make([]string,0)
+	//获取有哪些文章引用了该标签
+	sql := "select a_id from b_actmapptags where t_id=?"
+	db := conn.GetMysqlConn()
+	stmt,err := db.Prepare(sql)
+	if err != nil{
+		log.Error("DelTag has error:%v",err)
+		return -2
+	}
+	defer stmt.Close()
+	rows,err := stmt.Query(id)
+	if err != nil{
+		log.Error("DelTag has error:%v",err)
+		return -2
+	}
+	var aid string
+	for rows.Next(){
+		err = rows.Scan(&aid)
+		if err != nil{
+			continue
+		}
+		aids = append(aids,aid)
+	}
+	//以下删除表中引用和记录
+	sql = "delete from b_tag where id =?"
+	tx,err := db.Begin()
+	if err != nil{
+		log.Error("DelTag has error:%v",err)
+		return -2
+	}
+	stmt_tag,err := tx.Prepare(sql)
+	if err != nil{
+		log.Error("DelTag has error:%v",err)
+		return -2
+	}
+	_,err = stmt_tag.Exec(id)
+	if err != nil{
+		log.Error("DelTag has error:%v",err)
+		return -2
+	}
+	stmt_article,err := tx.Prepare(sql)
+	if err != nil{
+		tx.Rollback()
+		log.Error("DelTag has error:%v",err)
+		return -2
+	}
+	_,err = stmt_article.Exec(id)
+	if err != nil{
+		tx.Rollback()
+		log.Error("DelTag has error:%v",err)
+		return -2
+	}
+
+	tx.Commit()
+
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	keys := make([]interface{},0)
+	keys = append(keys,"taglist")
+	keys = append(keys,"tag:" + id)
+	for _,v := range aids{
+		keys = append(keys,"tagids:" + v)
+	}
+
+	rconn.Do("DEL",keys...)
+
+	return 0
+
+}
