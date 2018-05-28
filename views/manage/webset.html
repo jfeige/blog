@@ -15,13 +15,14 @@
 <div class="panel admin-panel">
   <div class="panel-head"><strong><span class="icon-pencil-square-o"></span> 网站信息</strong></div>
   <div class="body-content">
-    <form method="post" class="form-x" action="">
+    <form method="post" class="form-x" >
       <div class="form-group">
         <div class="label">
           <label>站点名称：</label>
         </div>
         <div class="field">
-          <input type="text" class="input" name="stitle" value="{{.webSet.Sitename}}" />
+          <input type="text" class="input" name="sitename" id="sitename" value="{{.webSet.Sitename}}" />
+            <input type="hidden"  name="id" id="id" value="{{.webSet.Id}}" />
           <div class="tips"></div>
         </div>
       </div>
@@ -30,7 +31,7 @@
               <label>站点描述：</label>
           </div>
           <div class="field">
-              <input type="text" class="input" name="stitle" value="{{.webSet.Sitedesc}}" />
+              <input type="text" class="input" name="sitedesc" id="sitedesc" value="{{.webSet.Sitedesc}}" />
               <div class="tips"></div>
           </div>
       </div>
@@ -39,7 +40,7 @@
           <label>站点域名：</label>
         </div>
         <div class="field">
-          <input type="text" class="input" name="surl" value="{{.webSet.Siteurl}}" />
+          <input type="text" class="input" name="siteurl" id="siteurl" value="{{.webSet.Siteurl}}" />
         </div>
       </div>
       <div class="form-group">
@@ -47,7 +48,7 @@
           <label>网站关键字：</label>
         </div>
         <div class="field">
-          <textarea class="input" name="skeywords" style="height:80px">{{.webSet.Keywords}}</textarea>
+          <textarea class="input" name="keywords" id="keywords" style="height:80px">{{.webSet.Keywords}}</textarea>
           <div class="tips"></div>
         </div>
       </div>
@@ -56,7 +57,7 @@
           <label>网站描述：</label>
         </div>
         <div class="field">
-          <textarea class="input" name="sdescription">{{.webSet.Descri}}</textarea>
+          <textarea class="input" name="descri" id="descri">{{.webSet.Descri}}</textarea>
           <div class="tips"></div>
         </div>
       </div>
@@ -65,7 +66,7 @@
           <label>联系人：</label>
         </div>
         <div class="field">
-          <input type="text" class="input" name="s_name" value="{{.webSet.Name}}" />
+          <input type="text" class="input" name="name" id="name" value="{{.webSet.Name}}" />
           <div class="tips"></div>
         </div>
       </div>
@@ -74,7 +75,7 @@
           <label>手机：</label>
         </div>
         <div class="field">
-          <input type="text" class="input" name="s_phone" value="{{.webSet.Phone}}" />
+          <input type="text" class="input" name="phone" id="phone" value="{{.webSet.Phone}}" />
           <div class="tips"></div>
         </div>
       </div>
@@ -83,7 +84,7 @@
           <label>QQ：</label>
         </div>
         <div class="field">
-          <input type="text" class="input" name="s_qq" value="{{.webSet.Qq}}" />
+          <input type="text" class="input" name="qq" id="qq" value="{{.webSet.Qq}}" />
           <div class="tips"></div>
         </div>
       </div>
@@ -93,7 +94,7 @@
           <label>Email：</label>
         </div>
         <div class="field">
-          <input type="text" class="input" name="s_email" value="{{.webSet.Email}}" />
+          <input type="text" class="input" name="email" id="email" value="{{.webSet.Email}}" />
           <div class="tips"></div>
         </div>
       </div>
@@ -102,7 +103,7 @@
           <label>地址：</label>
         </div>
         <div class="field">
-          <input type="text" class="input" name="s_address" value="{{.webSet.Place}}" />
+          <input type="text" class="input" name="place" id="place"  value="{{.webSet.Place}}" />
           <div class="tips"></div>
         </div>
       </div>
@@ -111,7 +112,7 @@
               <label>Github：</label>
           </div>
           <div class="field">
-              <input type="text" class="input" name="s_address" value="{{.webSet.Github}}" />
+              <input type="text" class="input" name="github" id="github" value="{{.webSet.Github}}" />
               <div class="tips"></div>
           </div>
       </div>
@@ -121,11 +122,63 @@
           <label></label>
         </div>
         <div class="field">
-          <button class="button bg-main icon-check-square-o" type="submit"> 提交</button>
+          <button class="button bg-main icon-check-square-o" type="button" onclick="updateWebSet();"> 提交</button>
         </div>
       </div>
     </form>
   </div>
 </div>
+<script language="JavaScript">
+    function updateWebSet(){
+        // id = $('#id').attr('value');
+        // sitename = $('#sitename').attr('value');
+        // sitedesc = $('#message').attr('value');
+        // siteurl = $('#message').attr('value');
+        // keywords = $('#message').attr('value');
+        // descri = $('#message').attr('value');
+        // name = $('#message').attr('value');
+        // phone = $('#message').attr('value');
+        // qq = $('#message').attr('value');
+        // email = $('#message').attr('value');
+        // place = $('#message').attr('value');
+        // github = $('#message').attr('value');
+
+        var aj = $.ajax( {
+            url:'/manage/updateWebSet',// 跳转到 action
+            data:{
+                id : $('#id').attr('value'),
+                sitename : $('#sitename').attr('value'),
+                sitedesc : $('#sitedesc').attr('value'),
+                siteurl : $('#siteurl').attr('value'),
+                keywords : $('#keywords').attr('value'),
+                descri : $('#descri').attr('value'),
+                name : $('#name').attr('value'),
+                phone : $('#phone').attr('value'),
+                qq : $('#qq').attr('value'),
+                email : $('#email').attr('value'),
+                place : $('#place').attr('value'),
+                github : $('#github').attr('value')
+            },
+            type:'post',
+            cache:false,
+            dataType:'json',
+            success:function(data) {
+                if(data.errcode == 0 ){
+                    alert("修改成功");
+                }else{
+                    alert("修改失败，请重新加载后再试");
+                }
+                window.location.href="/manage/webset"
+               // $('#right').attr('src', "/manage/webset");
+            },
+            error : function() {
+                alert("数据库异常，请稍后重试！");
+                window.frames['right'].reload()
+                // $('#right').attr('src', "/manage/webset");
+            },
+        });
+    }
+</script>
+<iframe name='upwebset' id="upwebset" style='display: block;'></iframe>
 </body></html>
 {{end}}

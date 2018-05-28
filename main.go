@@ -62,6 +62,11 @@ func initRouter()*gin.Engine{
 	router.GET("/manage/tag",controllers.Tag)
 	router.POST("/manage/tag",controllers.Tag)
 
+	//更新网站设置
+	router.POST("/manage/updateWebSet",controllers.UpdateWebSet)
+
+	//添加标签
+	router.POST("/manage/addTag" )
 	//404处理
 	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
 

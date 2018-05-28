@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"gopkg.in/gin-gonic/gin.v1"
+	log "github.com/alecthomas/log4go"
 	"net/http"
 	"blog/models"
 	"sync"
+	"strconv"
 )
 
 /**
@@ -26,6 +28,52 @@ func Webset(context *gin.Context){
 
 	context.HTML(http.StatusOK,"manage/webset.html",gin.H{
 		"webSet":webSet,
+	})
+}
+
+/**
+	保存网站设置
+ */
+func UpdateWebSet(context * gin.Context){
+	sid,_ := context.GetPostForm("id")
+	id,_ := strconv.Atoi(sid)
+	sitename,_ := context.GetPostForm("sitename")
+	sitedesc,_ := context.GetPostForm("sitedesc")
+	siteurl,_ := context.GetPostForm("siteurl")
+	keywords,_ := context.GetPostForm("keywords")
+	descri,_ := context.GetPostForm("descri")
+	name,_ := context.GetPostForm("name")
+	phone,_ := context.GetPostForm("phone")
+	qq,_ := context.GetPostForm("qq")
+	email,_ := context.GetPostForm("email")
+	place,_ := context.GetPostForm("place")
+	github,_ := context.GetPostForm("github")
+
+
+	webSet := new(models.Webset)
+	webSet.Id = id
+	webSet.Sitename = sitename
+	webSet.Sitedesc = sitedesc
+	webSet.Siteurl = siteurl
+	webSet.Keywords = keywords
+	webSet.Descri = descri
+	webSet.Name = name
+	webSet.Phone = phone
+	webSet.Qq = qq
+	webSet.Email = email
+	webSet.Place = place
+	webSet.Github = github
+
+	err := webSet.UpdateWebSet()
+	var errcode int
+	var errinfo string
+	if err != nil{
+		log.Error("updateWetSet has error:%v",err)
+		errcode = -1
+	}
+	context.JSON(http.StatusOK,gin.H{
+		"errcode":errcode,
+		"errinfo":errinfo,
 	})
 }
 
