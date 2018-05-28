@@ -67,7 +67,7 @@ func initRouter()*gin.Engine{
 	router.POST("/manage/updateWebSet",controllers.UpdateWebSet)
 
 	//添加标签
-	router.POST("/manage/addTag" )
+	router.POST("/manage/addTag",controllers.AddTag )
 	//删除标签
 	router.POST("manage/delTag",controllers.DelTag)
 	//404处理
