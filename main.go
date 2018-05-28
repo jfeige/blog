@@ -43,7 +43,7 @@ func initRouter()*gin.Engine{
 	//文章详情页面
 	router.GET("/article/:arteid",FrontWare(), controllers.Article)
 	//类别页面
-	router.GET("/category/:cateid/*page",FrontWare(), controllers.CategoryIndex)
+	router.GET("/category/:cateid/*page",FrontWare(), controllers.CategoryFront)
 	//标签页面
 	router.GET("/tag/*tagid",FrontWare(), controllers.TagIndex)
 	//添加一条回复
@@ -60,16 +60,28 @@ func initRouter()*gin.Engine{
 	router.GET("/manage/webset",controllers.Webset)
 
 
-	router.GET("/manage/tag",controllers.Tag)
-	router.POST("/manage/tag",controllers.Tag)
+
 
 	//更新网站设置
 	router.POST("/manage/updateWebSet",controllers.UpdateWebSet)
 
+	//标签首页
+	router.GET("/manage/tag",controllers.Tag)
 	//添加标签
 	router.POST("/manage/addTag",controllers.AddTag )
 	//删除标签
 	router.POST("manage/delTag",controllers.DelTag)
+
+	//类别首页
+	router.GET("/manage/category",controllers.CategoryManage)
+	//添加类别
+	//删除类别
+	router.GET("/manage/delcategory",controllers.DelCategory)
+
+
+
+
+
 	//404处理
 	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
 

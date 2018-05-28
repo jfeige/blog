@@ -34,7 +34,7 @@ func AddTag(context *gin.Context){
 	tagName,ok := context.GetPostForm("name")
 	if !ok{
 		gh["errcode"] = -1
-		gh["errinfo"] = "参数不全，请重试"
+		gh["errinfo"] = "参数错误，请重试!"
 		return
 	}
 	errcode := models.AddTag(tagName)

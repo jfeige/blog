@@ -10,9 +10,9 @@ import (
 )
 
 /**
-	类别首页
+	类别首页(前台)
  */
-func CategoryIndex(context *gin.Context){
+func CategoryFront(context *gin.Context){
 	var wg sync.WaitGroup
 
 	//类别id.如果tmpCateId 为空,先不考虑这种情况
@@ -69,5 +69,56 @@ func CategoryIndex(context *gin.Context){
 		gh["url"] = "/category/" + strconv.Itoa(cateid)
 	}
 
-	context.HTML(http.StatusOK,"index.html",gh)
+	context.HTML(http.StatusOK,"front/index.html",gh)
+}
+
+
+/**
+	后台类别首页
+ */
+func CategoryManage(context *gin.Context){
+	var wg sync.WaitGroup
+	//分类列表
+	categroy_list := models.CategoryList()
+	categoryList := make([]*models.Category,len(categroy_list))
+	for pos,id := range categroy_list{
+		wg.Add(1)
+		models.MultipleLoadCategory(id,pos,categoryList,&wg)
+	}
+
+	wg.Wait()
+
+	context.HTML(http.StatusOK,"category.html",gin.H{
+		"categoryList":categoryList,
+	})
+}
+
+/**
+	删除一个类别
+ */
+func DelCategory(context *gin.Context){
+	var errcode int
+	var errinfo string
+
+	defer context.JSON(http.StatusOK,gin.H{
+		"errcode":errcode,
+		"errinfo":errinfo,
+	})
+
+	id,ok := context.GetPostForm("id")
+	if !ok{
+		errcode = -1
+		errinfo = "参数错误，请重试"
+		return
+	}
+	code := models.DelCatetory(id)
+
+	if errcode != 0{
+		errcode = code
+		errinfo = "删除失败，请刷新后重试"
+		return
+	}
+
+	return
+
 }

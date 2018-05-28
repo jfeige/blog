@@ -81,23 +81,18 @@ func UpdateWebSet(context * gin.Context){
 	标签管理
  */
 func Tag(context *gin.Context){
-	if context.Request.Method == "GET"{
-		var wg sync.WaitGroup
-		//标签
-		tag_list := models.TagList()
-		tagList := make([]*models.Tag,len(tag_list))
-		for pos,id := range tag_list{
-			wg.Add(1)
-			models.MultipleLoadTag(id,pos,tagList,&wg)
-		}
-
-		wg.Wait()
-
-		context.HTML(http.StatusOK,"manage/tag.html",gin.H{
-			"tagList":tagList,
-		})
-	}else{
-
+	var wg sync.WaitGroup
+	//标签
+	tag_list := models.TagList()
+	tagList := make([]*models.Tag,len(tag_list))
+	for pos,id := range tag_list{
+		wg.Add(1)
+		models.MultipleLoadTag(id,pos,tagList,&wg)
 	}
 
+	wg.Wait()
+
+	context.HTML(http.StatusOK,"manage/tag.html",gin.H{
+		"tagList":tagList,
+	})
 }

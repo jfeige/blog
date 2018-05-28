@@ -47,3 +47,28 @@ func CategoryList()[]int{
 	}
 	return list
 }
+
+
+/**
+	删除一个类别
+ */
+func DelCatetory(id string)int{
+	db := conn.GetMysqlConn()
+	sql := "delete from b_category where id=?"
+	_,err := db.Exec(sql,id)
+	if err != nil{
+		log.Error("DelCategory has error:%v",err)
+		return -2
+	}
+
+	key := "category:" + id
+
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	_,err = rconn.Do("DEL",key)
+	if err != nil{
+		log.Error("DelCategory has error:%v",err)
+	}
+	return 0
+}
