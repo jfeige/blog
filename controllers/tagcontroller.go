@@ -29,7 +29,9 @@ func TagIndex(context *gin.Context){
  */
 func AddTag(context *gin.Context){
 	gh := make(map[string]interface{})
-	defer context.JSON(http.StatusOK,gh)
+	defer func(){
+		context.JSON(http.StatusOK,gh)
+	}()
 
 	tagName,ok := context.GetPostForm("name")
 	if !ok{
@@ -53,7 +55,9 @@ func AddTag(context *gin.Context){
  */
 func DelTag(context *gin.Context){
 	gh := make(map[string]interface{})
-	defer context.JSON(http.StatusOK,gh)
+	defer func(){
+		context.JSON(http.StatusOK,gh)
+	}()
 
 	tagid,ok := context.GetPostForm("id")
 	if !ok{
