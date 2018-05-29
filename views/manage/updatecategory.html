@@ -1,0 +1,96 @@
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="/static/css/pintuer.css">
+<link rel="stylesheet" href="/static/css/admin.css">
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/pintuer.js"></script>
+</head>
+<body>
+<div class="panel admin-panel">
+  <div class="panel-head"><strong><span class="icon-key"></span> 修改类别</strong></div>
+  <div class="body-content">
+    <form method="post" class="form-x" action="">
+      <div class="form-group">
+        <div class="label">
+          <label for="sitename">类别名称：</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" id="cateName" name="cateName" size="50" value="{{.cateotry.Name}}"/>
+        </div>
+      </div>
+      <div class="form-group">
+          <div class="label">
+              <label for="sitename">排序：</label>
+          </div>
+          <div class="field">
+              <input type="text" class="input w50" size="5" name="cateSort" id="cateSort" value="{{.cateotry.Sort}}" />
+          </div>
+      </div>
+      <div class="form-group">
+        <div class="label">
+          <label for="sitename">文章数量：</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50"  readonly value="{{.cateotry.Article_cnt}}" />&nbsp;&nbsp;{{if gt .cateotry.Article_cnt 0}}<button class="button bg-main backward" type="button" onclick="window.location.href='/manage/article/{{.cateotry.Id}}'"> 查看</button>{{end}}
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="label">
+          <label></label>
+        </div>
+        <div class="field">
+            <input type="hidden" id="cateid" value="{{.cateotry.Id}}"/>
+            <button class="button bg-main backward" type="button" onclick="history.go(-1);"> 返回</button>&nbsp;&nbsp;&nbsp;&nbsp;<button class="button bg-main icon-check-square-o" type="button" onclick="updateCertory();"> 提交</button>
+        </div>
+      </div>      
+    </form>
+  </div>
+</div>
+<script language="JavaScript">
+    function updateCertory(){
+        var cate_name = $.trim($("#cateName").attr('value'));
+        if(cate_name == ""){
+            alert("类别名称不能为空");
+            return;
+        }
+        var cate_sort = $.trim($("#cateSort").attr('value'));
+        if(cate_sort == ""){
+            alert("排序必须为中文");
+            return;
+        }
+        var sort = parseInt(cate_sort);//如果变量val是字符类型的数则转换为int类型 如果不是则ival为NaN
+        if(isNaN(sort)){
+            alert("排序必须为中文");
+            return;
+        }
+        var id = $.trim($("#cateid").attr('value'));
+        if(confirm("您确定要提交修改吗?")){
+            var aj = $.ajax( {
+                url:'/manage/upCatetory',
+                data:{name : cate_name,sort:sort,id:id},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("修改成功");
+                    }else{
+                        alert(data.errinfo);
+                    }
+                    window.location.href="/manage/category"
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/category"
+                },
+            });
+        }
+    }
+</script>
+</body></html>
