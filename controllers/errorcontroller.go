@@ -9,7 +9,6 @@ import (
 	没有找到路由
  */
 func ErrNoRoute(context *gin.Context){
-
 	//读取中间件传来的参数
 	tmp_gh,_ := context.Get("gh")
 	gh := tmp_gh.(map[string]interface{})

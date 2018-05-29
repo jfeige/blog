@@ -35,6 +35,7 @@ func initRouter()*gin.Engine{
 	router.LoadHTMLGlob("views/**/*")
 	//静态文件加载
 	router.Static("/static", "./static")
+	router.StaticFile("/favicon.ico","./static/img/favicon.ico")
 
 
 	//首页
@@ -53,7 +54,7 @@ func initRouter()*gin.Engine{
 	//跳转到登录页面
 	router.GET("/login",controllers.Login)
 
-	router.POST("/login",SessionWare(),controllers.Login)
+	router.POST("/mlogin",SessionWare(),controllers.MLogin)
 
 	//后台首页
 	router.GET("/manage/index",NoSessionWare(),controllers.MIndex)
@@ -75,12 +76,16 @@ func initRouter()*gin.Engine{
 	//类别首页
 	router.GET("/manage/category",controllers.CategoryManage)
 	//添加类别
+	router.POST("/manage/addcatetory",controllers.AddCategory)
 	//删除类别
-	router.GET("/manage/delcategory",controllers.DelCategory)
+	router.POST("/manage/delcategory",controllers.DelCategory)
+	//修改类别，跳转到修改页面
+	router.GET("/manage/updatecatetory/:cateid",controllers.UpdateCatetory)
+	//提交修改类别
+	router.POST("/manage/upCatetory",controllers.UpCatetory)
 
-
-
-
+	//查看文章列表
+	router.GET("/manage/article/*cateid",controllers.UpCatetory)
 
 	//404处理
 	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
@@ -124,7 +129,6 @@ func SessionWare()gin.HandlerFunc{
 	没有session
  */
 func NoSessionWare()gin.HandlerFunc{
-
 	return func(c *gin.Context){
 		var session *models.Session
 		sessid,_ := c.Cookie("session_id")
@@ -141,7 +145,8 @@ func NoSessionWare()gin.HandlerFunc{
 		}
 		http.SetCookie(c.Writer, cookie)
 		if !session.Has("uid"){
-			c.Redirect(http.StatusMovedPermanently,"/login")
+			c.Redirect(http.StatusFound,"/login")
+			c.Abort()
 			return
 		}
 		session.Expire()

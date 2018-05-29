@@ -131,6 +131,7 @@ func DelTag(id string)int {
 		log.Error("DelTag has error:%v",err)
 		return -2
 	}
+	sql = "delete from b_actmapptags where t_id=?"
 	stmt_article,err := tx.Prepare(sql)
 	if err != nil{
 		tx.Rollback()

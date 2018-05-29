@@ -96,12 +96,7 @@ func Article(context *gin.Context){
 }
 
 
-
-/**
-	登录		//ajax请求
- */
-func Login(context *gin.Context){
-	if context.Request.Method == "POST"{
+func MLogin(context *gin.Context){
 		var url = "/manage/index"
 		loginname,_ := context.GetPostForm("loginname")
 		password,_ := context.GetPostForm("password")
@@ -111,20 +106,28 @@ func Login(context *gin.Context){
 			//登录成功，写入session
 			tmpSession,_ := context.Get("session")
 			session := tmpSession.(*models.Session)
+
+
+			fmt.Println("=========",session.SessionID(),session.GetSession("uid"))
 			session.SetSession("uid",user.Id)
 			session.SetSession("name",user.Name)
 			session.SetSession("nickname",user.Nickname)
 
-			fmt.Println("-------",session.SessionID())
 		}
 
 		context.JSON(http.StatusOK,gin.H{
 			"ret":login_ret,
-			"url":url,
+			"purl":url,
 		})
-	}else{
-		//跳转到登录页面
-		context.HTML(http.StatusOK,"login.html",nil)
-	}
+}
+
+
+/**
+	登录
+ */
+func Login(context *gin.Context){
+
+	//跳转到登录页面
+	context.HTML(http.StatusOK,"login.html",nil)
 
 }

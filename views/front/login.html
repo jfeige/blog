@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<html >
 <head>
     <meta charset="utf-8">
     <title>登录</title>
@@ -28,7 +27,7 @@
             return
         }
          var aj = $.ajax( {
-             url:'/login',// 跳转到 action
+             url:'/mlogin',// 跳转到 action
              data:{
                   loginname : loginname,
                   password : password
@@ -37,13 +36,15 @@
              cache:false,
              dataType:'json',
              success:function(data) {
-                 if(data.ret == true ){
-                     alert("登录成功");
-                 }else{
-                     alert("登录失败");
-                 }
-                 location.href = data.url;
-                 },
+                 // if(data.ret == true ){
+                 //     alert("登录成功");
+                 // }else{
+                 //     alert("登录失败");
+                 // }
+                // window.location.href = "/index/1";
+                 alert(data.purl);
+                 window.location.href = data.purl;
+             },
              error : function() {
                   alert("异常！");
              }
