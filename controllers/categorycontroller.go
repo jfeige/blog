@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"blog/models"
+	"fmt"
 )
 
 /**
@@ -87,7 +88,7 @@ func CategoryManage(context *gin.Context){
 	}
 
 	wg.Wait()
-
+	fmt.Println(categoryList)
 	context.HTML(http.StatusOK,"category.html",gin.H{
 		"categoryList":categoryList,
 	})
@@ -100,10 +101,12 @@ func DelCategory(context *gin.Context){
 	var errcode int
 	var errinfo string
 
-	defer context.JSON(http.StatusOK,gin.H{
-		"errcode":errcode,
-		"errinfo":errinfo,
-	})
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
+	}()
 
 	id,ok := context.GetPostForm("id")
 	if !ok{
@@ -111,9 +114,10 @@ func DelCategory(context *gin.Context){
 		errinfo = "参数错误，请重试"
 		return
 	}
+
 	code := models.DelCatetory(id)
 
-	if errcode != 0{
+	if code != 0{
 		errcode = code
 		errinfo = "删除失败，请刷新后重试"
 		return
@@ -121,4 +125,102 @@ func DelCategory(context *gin.Context){
 
 	return
 
+}
+
+
+/**
+	添加一个类别
+ */
+func AddCategory(context *gin.Context){
+
+	var errcode int
+	var errinfo string
+
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
+
+	}()
+	cate_name,ok := context.GetPostForm("name")
+	if !ok || cate_name == ""{
+		errcode = -1
+		errinfo = "参数错误，请刷新后重试!"
+		return
+	}
+	code := models.AddCategory(cate_name)
+	if code < 0{
+		errcode = code
+		if code == -3{
+			errinfo = "已存在该标签，不能重复添加!"
+		}else{
+			errinfo = "添加失败，请稍后重试!"
+		}
+	}
+}
+
+
+/**
+	跳转到修改类别页面
+ */
+func UpdateCatetory(context *gin.Context){
+
+	cateid := context.Param("cateid")
+	id,_ := strconv.Atoi(cateid)
+	category := new(models.Category)
+	category.Load(id)
+
+	context.HTML(http.StatusOK,"updatecategory.html",gin.H{
+		"cateotry":category,
+	})
+}
+
+/**
+	提交修改类别
+ */
+func UpCatetory(context *gin.Context){
+	var errcode int
+	var errinfo string
+
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
+
+	}()
+	cateid,ok := context.GetPostForm("id");
+	if !ok{
+		errcode = -1
+		errinfo = "参数错误，请刷新后重试"
+	}
+	catesort,ok := context.GetPostForm("sort");
+	if !ok{
+		errcode = -1
+		errinfo = "参数错误，请刷新后重试"
+	}
+	catename,ok := context.GetPostForm("name");
+	if !ok{
+		errcode = -1
+		errinfo = "参数错误，请刷新后重试"
+	}
+
+	sort,err := strconv.Atoi(catesort)
+	if err != nil{
+		sort = 1
+	}
+	//处理sort，如果sort大于了当前类别数量，则sort＝类别数量
+	categroy_list := models.CategoryList()
+	if sort > len(categroy_list){
+		sort = len(categroy_list)
+	}
+
+	//执行更新入库
+	code := models.UpCatetory(cateid,catename,sort)
+	if code < 0{
+		errcode = -1
+		errinfo = "数据库异常，请稍后重试"
+	}
+	return
 }
