@@ -42,7 +42,6 @@ func AddComment(context *gin.Context){
 			"errinfo":"参数错误，请刷新该页面重试",
 		})
 	}
-	fmt.Println("---aid---",aid)
 	content,ok := context.GetPostForm("content")
 	if !ok{
 		//参数错误
@@ -57,7 +56,6 @@ func AddComment(context *gin.Context){
 			"errinfo":"内容不能为空",
 		})
 	}
-	fmt.Println("---content---",content)
 	models.AddComment(aid,name,content)
 
 	context.JSON(http.StatusOK,gin.H{
