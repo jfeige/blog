@@ -176,3 +176,14 @@ func (this *Article) FormatPublishTime(format string)string{
 
 	return time.Unix(this.Publish_time,0).Format(format)
 }
+
+
+/**
+	前台摘要显示
+ */
+func (this *Article) FormatContent()string{
+	if len(this.Content) > 500{
+		return this.Content[:500]
+	}
+	return this.Content
+}

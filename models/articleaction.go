@@ -11,10 +11,10 @@ import (
 /**
 	文章总数
  */
-func ArticleCnt(categoryId ...int)int{
+func ArticleCnt(cateid ...int)int{
 	var cid,cnt int
-	if len(categoryId) > 0{
-		cid = categoryId[0]
+	if len(cateid) > 0{
+		cid = cateid[0]
 	}
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
@@ -62,9 +62,18 @@ func ArticleCnt(categoryId ...int)int{
  */
 func ArticleList(args map[string]int)[]int{
 	list := make([]int,0)
-	pagesize := args["pagesize"]
-	isshow := args["isshow"]
-	offset := args["offset"]
+	pagesize,ok := args["pagesize"]
+	if !ok{
+		pagesize = 10
+	}
+	isshow,ok := args["isshow"]
+	if !ok{
+		isshow = -1
+	}
+	offset,ok := args["offset"]
+	if !ok{
+		offset = 0
+	}
 	cateid,ok := args["cateid"]		//分类id
 	if !ok || cateid < 0{
 		cateid = 0
@@ -120,3 +129,35 @@ func ArticleList(args map[string]int)[]int{
 	return list
 }
 
+
+/**
+	修改文章内容
+ */
+func UpdateArticleInfo(id int,title,content string)int{
+
+	db := conn.GetMysqlConn()
+	sql := "update b_article set title=?,content=? where id=?"
+	stmt,err := db.Prepare(sql)
+	if err != nil{
+		log.Error("UpdateArticleInfo has error:%v",err)
+		return -2
+	}
+	defer stmt.Close()
+	_,err = stmt.Exec(title,content,id)
+	if err != nil{
+		log.Error("UpdateArticleInfo has error:%v",err)
+		return -2
+	}
+
+	//更新缓存
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	key := "article:" + strconv.Itoa(id)
+
+	_,err = rconn.Do("DEL",key)
+	if err != nil{
+		log.Error("UpdateArticleInfo has error:%v",err)
+	}
+	return 0
+}
