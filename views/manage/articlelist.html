@@ -1,0 +1,65 @@
+{{ define "manage/articlelist.html" }}
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <title>文章列表</title>
+    <link rel="stylesheet" href="/static/css/pintuer.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/pintuer.js"></script>
+</head>
+<body>
+    <div class="panel admin-panel">
+        <div class="panel-head"><strong class="icon-reorder"> 文章列表</strong></div>
+        <div class="padding border-bottom">
+            <a class="button border-yellow" href=""><span class="icon-plus-square-o"></span> 添加文章</a>
+        </div>
+        <table class="table table-hover text-center">
+            <tr>
+                <th width="120">ID</th>
+                <th>标题</th>
+                <th>作者</th>
+                <th>所属类别</th>
+                <th>阅读</th>
+                <th>评论</th>
+                <th>发表日期</th>
+                <th>操作</th>
+            </tr>
+            {{range $k, $v := .articleList}}
+                <tr>
+                    <td>{{$v.Id}}</td>
+                    <td><a href="/manage/articleinfo/{{$v.Id}}">{{$v.Title}}</a></td>
+                    <td>{{$v.User}}</td>
+                    <td>{{$v.Category}}</td>
+                    <td>{{$v.Read_count}}</td>
+                    <td>{{$v.Comment_count}}</td>
+                    <td>{{$v.PublishTime}}</td>
+                    <td><div class="button-group"> <a class="button border-red" href="javascript:void(0)" onclick="return del(1)"><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/comment/{{$v.Id}}"><span class="icon-comment-o"></span> 查看评论</a> </div></td>
+                </tr>
+            {{end}}
+            <tr>
+                <td colspan="8">
+                    <div class="pagelist">
+                        {{if gt .page 1}}
+                            <a href="{{$.url}}?page={{.prevPage}}">上一页</a>
+                        {{end}}
+                        {{range $p, $v := .pages}}
+                            {{if eq $v $.page}}
+                                <span class="current">{{$v}}</span>
+                            {{else}}
+                                <a href="{{$.url}}?page={{$v}}">{{$v}}</a>
+                            {{end}}
+                        {{end}}
+                        {{if lt .page .allPage}}
+                            <a href="{{$.url}}?page={{.nextPage}}">下一页</a>
+                            <a href="{{$.url}}?page={{.allPage}}">尾页</a>
+                        {{end}}
+                    </div></td>
+            </tr>
+        </table>
+    </div>
+</body></html>
+{{end}}
