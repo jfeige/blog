@@ -11,9 +11,15 @@
     <script src="/static/js/pintuer.js"></script>
     <link rel="stylesheet"href="/static/editormd/css/editormd.css" />
     <link rel="stylesheet" href="/static/editormd/css/editormd.preview.min.css" />
-
+    <link rel="stylesheet" href="/static/css/jquery-labelauty.css">
     <script src="/static/editormd/editormd.min.js"></script>
 
+    <style>
+        ul { list-style-type: none;}
+        li { display: inline-block;}
+        li { margin: 10px 0;}
+        checkbox.labelauty + label { font: 12px "Microsoft Yahei";}
+    </style>
     <script type="text/javascript">
         var testEditor;
 
@@ -47,7 +53,7 @@
 </head>
 <body>
 <div class="panel admin-panel">
-    <div class="panel-head"><strong><span class="icon-pencil-square-o"></span> 文章详情</strong></div>
+    <div class="panel-head"><strong><span class="icon-pencil-square-o"></span> 添加文章</strong></div>
     <div class="body-content">
         <form method="post" class="form-x" action="">
             <div class="form-group">
@@ -55,9 +61,33 @@
                     <label>标题：</label>
                 </div>
                 <div class="field">
-                    <input type="text" class="input" name="title" id="title" value="{{.article.Title}}" />
-                    <input type="hidden" class="input" name="id" id="id" value="{{.article.Id}}" />
+                    <input type="text" class="input" name="title" id="title" value="" />
                     <div class="tips"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="label">
+                    <label>类别：</label>
+                </div>
+                <div class="field">
+                    <select id="cateid" name="cateid" class="input w50">
+                        <option value="">请选择分类</option>
+                        {{range .categoryList}}
+                            <option value="{{.Id}}">{{.Name}}</option>
+                        {{end}}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="label">
+                    <label>标签：</label>
+                </div>
+                <div class="field">
+                    <ul class="dowebok">
+                        {{range .tagList}}
+                            <li><input type="checkbox" name="tagids[]" data-labelauty="{{.Tag}}" value="{{.Id}}"/></li>
+                        {{end}}
+                    </ul>
                 </div>
             </div>
             <div class="form-group">
@@ -66,7 +96,7 @@
                         <label>标题：</label>
                     </div>
                     <div class="editormd" id="test-editormd">
-                        <textarea class="editormd-markdown-textarea" name="test-editormd-markdown-doc" id="editormd">{{.article.Content}}</textarea>
+                        <textarea class="editormd-markdown-textarea" name="test-editormd-markdown-doc" id="editormd"></textarea>
                         <!-- 第二个隐藏文本域，用来构造生成的HTML代码，方便表单POST提交，这里的name可以任意取，后台接受时以这个name键为准 -->
                         <!-- html textarea 需要开启配置项 saveHTMLToTextarea == true -->
                         <textarea class="editormd-html-textarea" name="editorhtml" id="editorhtml"></textarea>
@@ -77,7 +107,7 @@
                     <label></label>
                 </div>
                 <div class="field">
-                    <button class="button bg-main icon-check-square-o" type="button" onclick="updateArticle();"> 提交</button>
+                    <button class="button bg-main icon-check-square-o" type="button" onclick="addArticle();"> 提交</button>
                 </div>
             </div>
         </form>
@@ -85,9 +115,12 @@
 </div>
 <script src="/static/editormd/lib/marked.min.js"></script>
 <script src="/static/editormd/lib/prettify.min.js"></script>
-<script src="/static/editormd/editormd.min.js"></script>
+<script src="/static/js/jquery-labelauty.js"></script>
 
 <script type="text/javascript">
+    $(function(){
+        $(':checkbox').labelauty();
+    });
     editormd.markdownToHTML("editormd",{
         htmlDecode      : "style,script,iframe",  // you can filter tags decode
         emoji           : true,
@@ -96,41 +129,64 @@
         flowChart       : true,  // 默认不解析
         sequenceDiagram : true,  // 默认不解析
     });
+
 </script>
 <script language="JavaScript">
-    function updateArticle(){
+    function addArticle(){
         var editormd = $("#editormd").val();
         var title = $("#title").val();
+        var cateid = $("#cateid").val();
         if($.trim(title) == ""){
             alert("文章标题不能为空!");
+            $("#title").focus();
             return
+        }
+        if(cateid == ""){
+            alert("请选择类别");
+            $("#cateid").focus();
+            return;
         }
         if($.trim(editormd) == ""){
             alert("文章内容不能为空!");
-            return
+            return;
         }
-        var id = $("#id").val();
-        if(confirm("您确定要提交修改吗?")){
+
+
+        var checkID = [];
+
+        var Checkbox=false;
+        $("input[name='tagids[]']:checked").each(function(i){
+            checkID[i] =$(this).val();
+            Checkbox=true;
+        });
+        var ids = checkID.join(',');
+        if (!Checkbox){
+            alert("必须选择至少一个标签!");
+            return;
+        }
+
+        if(confirm("您确定要添加吗?")){
             var aj = $.ajax( {
-                url:'/manage/updatearticle',
-                data:{title : title,content:editormd,id:id},
+                url:'/manage/addarticle',
+                data:{title : title,content:editormd,cateid:cateid,checkID:ids},
                 type:'post',
                 cache:false,
                 dataType:'json',
                 success:function(data) {
                     if(data.errcode == 0 ){
-                        alert("修改成功");
+                        alert("添加成功");
                     }else{
                         alert(data.errinfo);
                     }
-                    window.location.href="/manage/articleinfo/" + id;
+                    window.location.href="/manage/article/" + cateid;
                 },
                 error : function() {
                     alert("数据库异常，请稍后重试！");
-                    window.location.href="/manage/articleinfo" + id;
+                    window.location.href="/manage/article" + cateid;
                 },
             });
         }
     }
 </script>
-</body></html>
+</body>
+</html>

@@ -11,9 +11,16 @@
     <script src="/static/js/pintuer.js"></script>
     <link rel="stylesheet"href="/static/editormd/css/editormd.css" />
     <link rel="stylesheet" href="/static/editormd/css/editormd.preview.min.css" />
+    <link rel="stylesheet" href="/static/css/jquery-labelauty.css">
 
     <script src="/static/editormd/editormd.min.js"></script>
 
+    <style>
+        ul { list-style-type: none;}
+        li { display: inline-block;}
+        li { margin: 10px 0;}
+        checkbox.labelauty + label { font: 12px "Microsoft Yahei";}
+    </style>
     <script type="text/javascript">
         var testEditor;
 
@@ -60,6 +67,33 @@
                     <div class="tips"></div>
                 </div>
             </div>
+
+            <div class="form-group">
+                <div class="label">
+                    <label>类别：</label>
+                </div>
+                <div class="field">
+                    <select id="cateid" name="cateid" class="input w50">
+                        <option value="">请选择分类</option>
+                    {{range .categoryList}}
+                        <option value="{{.Id}}" {{if eq .Id $.article.Categoryid}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="label">
+                    <label>标签：</label>
+                </div>
+                <div class="field">
+                    <ul class="dowebok">
+                    {{range .tagList}}
+                        <li><input type="checkbox" name="tagids[]" data-labelauty="{{.Tag}}" value="{{.Id}}" {{if $.article.IsTag .Id}}checked{{end}}/></li>
+                    {{end}}
+                    </ul>
+                </div>
+            </div>
+
             <div class="form-group">
 
                     <div class="label">
@@ -85,9 +119,12 @@
 </div>
 <script src="/static/editormd/lib/marked.min.js"></script>
 <script src="/static/editormd/lib/prettify.min.js"></script>
-<script src="/static/editormd/editormd.min.js"></script>
+<script src="/static/js/jquery-labelauty.js"></script>
 
 <script type="text/javascript">
+    $(function(){
+        $(':checkbox').labelauty();
+    });
     editormd.markdownToHTML("editormd",{
         htmlDecode      : "style,script,iframe",  // you can filter tags decode
         emoji           : true,
@@ -109,11 +146,25 @@
             alert("文章内容不能为空!");
             return
         }
+
+        var checkID = [];
+
+        var Checkbox=false;
+        $("input[name='tagids[]']:checked").each(function(i){
+            checkID[i] =$(this).val();
+            Checkbox=true;
+        });
+        var ids = checkID.join(',');
+        if (!Checkbox){
+            alert("必须选择至少一个标签!");
+            return;
+        }
+
         var id = $("#id").val();
         if(confirm("您确定要提交修改吗?")){
             var aj = $.ajax( {
                 url:'/manage/updatearticle',
-                data:{title : title,content:editormd,id:id},
+                data:{title : title,content:editormd,id:id,checkID:ids},
                 type:'post',
                 cache:false,
                 dataType:'json',
