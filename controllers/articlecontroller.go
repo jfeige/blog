@@ -27,10 +27,29 @@ func ArticleInfo(context *gin.Context){
 		//数据错误或者id不正确
 
 	}
+	var wg sync.WaitGroup
 
+	categroy_list := models.CategoryList()
+	categoryList := make([]*models.Category,len(categroy_list))
+	for pos,id := range categroy_list{
+		wg.Add(1)
+		models.MultipleLoadCategory(id,pos,categoryList,&wg)
+	}
+
+	//标签
+	tag_list := models.TagList()
+	tagList := make([]*models.Tag,len(tag_list))
+	for pos,id := range tag_list{
+		wg.Add(1)
+		models.MultipleLoadTag(id,pos,tagList,&wg)
+	}
+
+	wg.Wait()
 
 	context.HTML(http.StatusOK,"articleinfo.html",gin.H{
 		"article":article,
+		"categoryList":categoryList,
+		"tagList":tagList,
 	})
 }
 /**
@@ -116,29 +135,171 @@ func UpfateArticleInfo(context *gin.Context){
 	if !ok{
 		errcode = -1
 		errinfo = "参数错误，请重试!"
+		return
 	}
 	arteid,err := strconv.Atoi(id)
 	if err != nil{
 		errcode = -1
 		errinfo = "参数错误，请重试!"
+		return
 	}
 
 	title,ok := context.GetPostForm("title")
 	if !ok || title == ""{
 		errcode = -1
 		errinfo = "参数错误，请重试!"
+		return
 	}
 
 	content,ok := context.GetPostForm("content")
 	if !ok || content == ""{
 		errcode = -1
 		errinfo = "参数错误，请重试!"
+		return
 	}
 
-	code := models.UpdateArticleInfo(arteid,title,content)
+	tagids,ok := context.GetPostForm("checkID")
+	if !ok || tagids == ""{
+		errcode = -1
+		errinfo = "参数错误，请重试!"
+		return
+	}
+
+	code := models.UpdateArticleInfo(arteid,title,content,tagids)
 	if code < 0{
 		errcode = -2
 		errinfo = "修改失败，请稍后重试!"
+		return
+	}
+}
+
+
+/**
+	添加文章
+ */
+func AddArticle(context *gin.Context){
+	if context.Request.Method == "POST"{
+		var errcode int
+		var errinfo string
+
+		defer func(){
+			context.JSON(http.StatusOK,gin.H{
+				"errcode":errcode,
+				"errinfo":errinfo,
+			})
+		}()
+		id,ok := context.GetPostForm("cateid")
+		if !ok{
+			errcode = -1
+			errinfo = "参数错误，请重试!"
+			return
+		}
+		cateid,err := strconv.Atoi(id)
+		if err != nil{
+			errcode = -1
+			errinfo = "参数错误，请重试!"
+			return
+		}
+
+		title,ok := context.GetPostForm("title")
+		if !ok || title == ""{
+			errcode = -1
+			errinfo = "参数错误，请重试!"
+			return
+		}
+
+		content,ok := context.GetPostForm("content")
+		if !ok || content == ""{
+			errcode = -1
+			errinfo = "参数错误，请重试!"
+			return
+		}
+
+		//
+		tagids,ok := context.GetPostForm("checkID")
+		if !ok || tagids == ""{
+			errcode = -1
+			errinfo = "参数错误，请重试!"
+			return
+		}
+
+
+		code := models.AddArticle(cateid,title,content,tagids)
+		if code < 0{
+			errcode = -2
+			errinfo = "添加失败，请刷新后重试!"
+			return
+		}
+	}else{
+		var wg sync.WaitGroup
+		//获取类别列表
+		categroy_list := models.CategoryList()
+		categoryList := make([]*models.Category,len(categroy_list))
+		for pos,id := range categroy_list{
+			wg.Add(1)
+			models.MultipleLoadCategory(id,pos,categoryList,&wg)
+		}
+
+		//标签
+		tag_list := models.TagList()
+		tagList := make([]*models.Tag,len(tag_list))
+		for pos,id := range tag_list{
+			wg.Add(1)
+			models.MultipleLoadTag(id,pos,tagList,&wg)
+		}
+
+		wg.Wait()
+
+		context.HTML(http.StatusOK,"addarticle.html",gin.H{
+			"categoryList":categoryList,
+			"tagList":tagList,
+		})
+	}
+}
+
+/**
+	删除文章
+ */
+func DelArticle(context *gin.Context){
+	var errcode int
+	var errinfo string
+
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
+	}()
+
+	a_id,ok := context.GetPostForm("arteid")
+	if !ok{
+		errcode = -1
+		errinfo = "参数错误，请重试!"
+		return
+	}
+	aid,err := strconv.Atoi(a_id)
+	if err != nil{
+		errcode = -1
+		errinfo = "参数错误，请重试!"
+		return
+	}
+	cate_id,ok := context.GetPostForm("cateid")
+	if !ok{
+		errcode = -1
+		errinfo = "参数错误，请重试!"
+		return
+	}
+	cateid,err := strconv.Atoi(cate_id)
+	if err != nil{
+		errcode = -1
+		errinfo = "参数错误，请重试!"
+		return
+	}
+	code := models.DelArticle(aid,cateid)
+	if code < 0{
+		errcode = -2
+		errinfo = "删除失败，请刷新后重试!"
+		return
 	}
 
 	return
