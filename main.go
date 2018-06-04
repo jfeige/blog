@@ -12,11 +12,16 @@ import (
 
 func main() {
 
+	gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
+
 	err := models.InitBaseConfig("./conf/blog.ini")
 	if err != nil{
 		fmt.Println(err)
 		return
 	}
+
+	//前台文章浏览量入库
+	go controllers.ProcessReadData()
 
 	router := initRouter()
 
@@ -28,8 +33,8 @@ func main() {
 
 
 func initRouter()*gin.Engine{
-	router := gin.Default()
 
+	router := gin.Default()
 
 	//模版文件和静态资源文件
 	router.LoadHTMLGlob("views/**/*")
@@ -38,6 +43,7 @@ func initRouter()*gin.Engine{
 	router.StaticFile("/favicon.ico","./static/img/favicon.ico")
 
 
+	//前台页面-----------------------------------------------------------
 	//首页
 	router.GET("/",FrontWare(),SessionWare(),controllers.Index)
 	router.GET("/index/*page",SessionWare(),FrontWare(),controllers.Index)
@@ -53,39 +59,54 @@ func initRouter()*gin.Engine{
 
 	//跳转到登录页面
 	router.GET("/login",controllers.Login)
-
+	//登录
 	router.POST("/mlogin",SessionWare(),controllers.MLogin)
 
+	//后台页面-----------------------------------------------------------
+	manageRouter := router.Group("/manage")
+	manageRouter.Use(NoSessionWare())
 	//后台首页
-	router.GET("/manage/index",NoSessionWare(),controllers.MIndex)
-	router.GET("/manage/webset",controllers.Webset)
-
-
-
-
+	manageRouter.GET("",controllers.MIndex)
+	manageRouter.GET("/index",controllers.MIndex)
+	manageRouter.GET("/webset",controllers.Webset)
 	//更新网站设置
-	router.POST("/manage/updateWebSet",controllers.UpdateWebSet)
-
+	manageRouter.POST("/updateWebSet",controllers.UpdateWebSet)
 	//标签首页
-	router.GET("/manage/tag",controllers.Tag)
+	manageRouter.GET("/tag",controllers.Tag)
 	//添加标签
-	router.POST("/manage/addTag",controllers.AddTag )
+	manageRouter.POST("/addTag",controllers.AddTag )
 	//删除标签
-	router.POST("manage/delTag",controllers.DelTag)
-
+	manageRouter.POST("/delTag",controllers.DelTag)
 	//类别首页
-	router.GET("/manage/category",controllers.CategoryManage)
+	manageRouter.GET("/category",controllers.CategoryManage)
 	//添加类别
-	router.POST("/manage/addcatetory",controllers.AddCategory)
+	manageRouter.POST("/addcatetory",controllers.AddCategory)
 	//删除类别
-	router.POST("/manage/delcategory",controllers.DelCategory)
+	manageRouter.POST("/delcategory",controllers.DelCategory)
 	//修改类别，跳转到修改页面
-	router.GET("/manage/updatecatetory/:cateid",controllers.UpdateCatetory)
+	manageRouter.GET("/updateCatetory/:cateid",controllers.UpdateCatetory)
 	//提交修改类别
-	router.POST("/manage/upCatetory",controllers.UpCatetory)
-
+	manageRouter.POST("/upCatetory",controllers.UpCatetory)
 	//查看文章列表
-	router.GET("/manage/article/*cateid",controllers.UpCatetory)
+	manageRouter.GET("/articleList/*cateid",controllers.ArticleList)
+	//评论列表
+	manageRouter.GET("/commentList/*arteid",controllers.CommentList)
+	//文章详情
+	manageRouter.GET("/articleinfo/:arteid",controllers.ArticleInfo)
+	//文章修改
+	manageRouter.POST("/updateArticle",controllers.UpfateArticleInfo)
+	//添加文章
+	manageRouter.Any("/addArticle",controllers.AddArticle)
+	//删除文章
+	manageRouter.Any("/delArticle",controllers.AddArticle)
+
+	//退出登录
+	manageRouter.GET("/logout",controllers.Logout)
+
+
+	manageRouter.GET("/test",func(context *gin.Context){
+		context.HTML(http.StatusOK,"test.html",nil)
+	})
 
 	//404处理
 	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
@@ -230,7 +251,6 @@ func FrontWare() gin.HandlerFunc {
 		//文章列表
 		args := make(map[string]int)
 		args["page"] = 1
-		args["isshow"] = -1
 		args["pagesize"] = 10
 		args["offset"] = 0
 		article_ids := models.ArticleList(args)
