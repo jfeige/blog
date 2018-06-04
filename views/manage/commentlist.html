@@ -31,14 +31,14 @@
                 <th width="120">留言时间</th>
                 <th>操作</th>
             </tr>
-            {{range .commetList}}
+            {{range $k, $v := .commetList}}
                 <tr>
-                    <td><input type="checkbox" name="id[]" value="{{.Id}}" />{{.Id}}</td>
-                    <td>{{.Name}}</td>
-                    <td><a href="/manage/articleinfo/{{.ArticleInfo.Id}}">{{.ArticleInfo.Title}}</a></td>
-                    <td>{{.Content}}</td>
-                    <td>{{.FormatAtime "2006/01/02 15:04:05"}}</td>
-                    <td><div class="button-group"> <a class="button border-red" href="javascript:void(0)" onclick="return del(1)"><span class="icon-trash-o"></span> 删除</a> </div></td>
+                    <td><input type="checkbox" name="id[]" value="{{$v.Id}}" />{{$v.Id}}</td>
+                    <td>{{$v.Name}}</td>
+                    <td><a href="/manage/articleinfo/{{$v.ArticleInfo.Id}}">{{$v.ArticleInfo.Title}}</a></td>
+                    <td>{{$v.FormatContent}}</td>
+                    <td>{{$v.FormatAtime "2006/01/02 15:04:05"}}</td>
+                    <td><div class="button-group"> <a class="button border-red" href="javascript:void(0)" onclick="delComment('{{$v.Articleid}}','{{$v.Id}}');"><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/viewComment/{{$v.Id}}"><span class="icon-comment-o"></span> 查看</a></div></td>
                 </tr>
             {{end}}
             <tr>
@@ -65,6 +65,30 @@
     </div>
 </form>
 <script type="text/javascript">
+
+    function delComment(a_id,c_id){
+        if(confirm("您确定要提删除该评论吗?")){
+            var aj = $.ajax( {
+                url:'/manage/delComment',
+                data:{aid : a_id,cid:c_id},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("删除成功");
+                    }else{
+                        alert(data.errinfo);
+                    }
+                    window.location.href="/manage/commentList/0";
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/commentList/0";
+                },
+            });
+        }
+    }
 
     function del(id){
         if(confirm("您确定要删除吗?")){
