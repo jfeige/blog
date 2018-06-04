@@ -163,7 +163,7 @@
         var id = $("#id").val();
         if(confirm("您确定要提交修改吗?")){
             var aj = $.ajax( {
-                url:'/manage/updatearticle',
+                url:'/manage/updateArticle',
                 data:{title : title,content:editormd,id:id,checkID:ids},
                 type:'post',
                 cache:false,

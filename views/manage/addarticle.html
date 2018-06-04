@@ -167,7 +167,7 @@
 
         if(confirm("您确定要添加吗?")){
             var aj = $.ajax( {
-                url:'/manage/addarticle',
+                url:'/manage/addArticle',
                 data:{title : title,content:editormd,cateid:cateid,checkID:ids},
                 type:'post',
                 cache:false,
