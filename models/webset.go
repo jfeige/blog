@@ -20,6 +20,7 @@ type Webset struct {
 	Github string `redis:"github"`
 }
 
+const webset_fieldd_count = 12
 
 func (this *Webset) Load()error{
 	rconn := conn.GetRedisConn()
@@ -28,9 +29,13 @@ func (this *Webset) Load()error{
 	key := "webset"
 	values,err := redis.Values(rconn.Do("HGETALL",key))
 	if err == nil && len(values) > 0{
-		err = redis.ScanStruct(values, this)
-		if err == nil {
-			return nil
+		if len(values) == webset_fieldd_count * 2{
+			err = redis.ScanStruct(values, this)
+			if err == nil {
+				return nil
+			}
+		}else{
+			rconn.Do("DEL",key)
 		}
 	}
 	sql := "select id,sitename,sitedesc,siteurl,keywords,descri,name,phone,qq,email,place,github from b_webset order by id desc limit 1"

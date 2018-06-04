@@ -12,7 +12,7 @@ type Tag struct {
 	Tag string `redis:"tag"`
 }
 
-
+const tag_field_cnt = 2
 
 func (this *Tag) Load(id int)error{
 	rconn := conn.GetRedisConn()
@@ -21,10 +21,15 @@ func (this *Tag) Load(id int)error{
 	key := "tag:" + strconv.Itoa(id)
 	values,err := redis.Values(rconn.Do("HGETALL",key))
 	if err == nil && len(values) > 0{
-		err = redis.ScanStruct(values, this)
-		if err == nil {
-			return nil
+		if len(values) == tag_field_cnt * 2{
+			err = redis.ScanStruct(values, this)
+			if err == nil {
+				return nil
+			}
+		}else{
+			rconn.Do("DEL",key)
 		}
+
 	}
 	sql := "select id,tag from b_tag where id=?"
 	db := conn.GetMysqlConn()

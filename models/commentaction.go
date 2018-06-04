@@ -197,3 +197,40 @@ func AddComment(aid int,name interface{},content string){
 	rconn.Do("DEL",keys...)
 
 }
+
+
+/**
+	删除一条评论
+ */
+func DelComment(aid,cid int)int{
+	db := conn.GetMysqlConn()
+	sql := "call delComment(?,?)"
+
+	stmt,err := db.Prepare(sql)
+	if err != nil{
+		log.Error("DelComment has error:%v",err)
+		return -2
+	}
+	defer stmt.Close()
+	var errcode int
+	row := stmt.QueryRow(aid,cid)
+	err = row.Scan(&errcode)
+	if err != nil{
+		return -2
+	}
+
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	keys := make([]interface{},0)
+	keys = append(keys,"comment:" + strconv.Itoa(cid))
+	keys = append(keys,"commentList:0")
+	keys = append(keys,"commentList:" + strconv.Itoa(aid))
+	keys = append(keys,"article:" + strconv.Itoa(aid))
+
+	_,err = rconn.Do("DEL",keys...)
+	if err != nil{
+		log.Error("DelComment has error:%v",err)
+	}
+	return errcode
+}

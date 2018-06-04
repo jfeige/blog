@@ -13,6 +13,7 @@ type Category struct {
 	Sort string `redis:"sort"`
 }
 
+const category_field_cnt = 4
 
 func (this *Category) Load(id int)error{
 	rconn := conn.GetRedisConn()
@@ -21,10 +22,15 @@ func (this *Category) Load(id int)error{
 	key := "category:" + strconv.Itoa(id)
 	values,err := redis.Values(rconn.Do("HGETALL",key))
 	if err == nil && len(values) > 0{
-		err = redis.ScanStruct(values, this)
-		if err == nil {
-			return nil
+		if len(values) == category_field_cnt * 2{
+			err = redis.ScanStruct(values, this)
+			if err == nil {
+				return nil
+			}
+		}else{
+			rconn.Do("DEL",key)
 		}
+
 	}
 	sql := "select id,name,article_cnt,sort from b_category where id=?"
 	db := conn.GetMysqlConn()

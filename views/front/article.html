@@ -39,7 +39,11 @@
           <h2>添加新回复</h2><div class="clr"></div>
             <ol>
                 <li>
-                  <label for="message">内容</label>
+                    <label for="message">姓名<span style="color:red">*</span></label>
+                    <input type="text" id="name" name="name"/>
+                </li>
+                <li>
+                  <label for="message">内容<span style="color:red">*</span></label>
                   <textarea id="message" name="message" rows="8" cols="50"></textarea>
                 </li>
                 <li>
@@ -73,14 +77,20 @@
 <script type="text/javascript">
 
     function recommd(aid){
-        content = $('#message').attr('value');
+        var name = $('#name').val();
+        var content = $('#message').val();
+        if($.trim(name) == ""){
+            alert("请输入你的姓名!");
+            return;
+        }
         if($.trim(content) == ""){
-            alert("回复内容不能为空");
-            return
+            alert("回复内容不能为空!");
+            return;
         }
         var aj = $.ajax( {
-            url:'/comment/add',// 跳转到 action
+            url:'/comment/addComment',// 跳转到 action
             data:{
+                name : name,
                 content : content,
                 aid : aid
             },

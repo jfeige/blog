@@ -15,53 +15,50 @@ import (
  */
 func AddComment(context *gin.Context){
 
-	var name interface{}
-	tmpSession,exists := context.Get("session")
-	if exists{
-		session := tmpSession.(*models.Session)
-		if session.Has("uid"){
-			name = session.GetSession("name")
-		}else{
-			name = "guest"
-		}
-	}
+	var errcode = -1
+	var errinfo = "参数不全，请刷新该页面重试"
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
+	}()
+
 	//articleid
-	articleid,ok := context.GetPostForm("aid")
+	aid,ok := context.GetPostForm("aid")
 	if !ok{
 		//参数错误
-		context.JSON(http.StatusOK,gin.H{
-			"errcode":-1,
-			"errinfo":"参数不全，请刷新该页面重试",
-		})
+		return
 	}
-	aid,err := strconv.Atoi(articleid)
+	a_id,err := strconv.Atoi(aid)
 	if err != nil{
 		//参数错误
-		context.JSON(http.StatusOK,gin.H{
-			"errcode":-1,
-			"errinfo":"参数错误，请刷新该页面重试",
-		})
+		return
+	}
+	name,ok := context.GetPostForm("name")
+	if !ok{
+		//参数错误
+		return
+	}
+	if name == ""{
+		errinfo = "姓名不能为空"
+		return
 	}
 	content,ok := context.GetPostForm("content")
 	if !ok{
 		//参数错误
-		context.JSON(http.StatusOK,gin.H{
-			"errcode":-1,
-			"errinfo":"参数不全，请刷新该页面重试",
-		})
+		return
 	}
 	if content == ""{
-		context.JSON(http.StatusOK,gin.H{
-			"errcode":-1,
-			"errinfo":"内容不能为空",
-		})
+		errinfo = "内容不能为空"
+		return
 	}
-	models.AddComment(aid,name,content)
+	models.AddComment(a_id,name,content)
 
-	context.JSON(http.StatusOK,gin.H{
-		"errcode":0,
-		"errinfo":"",
-	})
+	errcode = 0
+	errinfo = ""
+
+	return
 }
 
 
@@ -75,6 +72,8 @@ func CommentList(context *gin.Context){
 	tmpArteId := context.Param("arteid")
 	if tmpArteId != ""{
 		tmpArteId = tmpArteId[1:]
+	}else{
+		tmpArteId = "0"
 	}
 
 	arteid,_ := strconv.Atoi(tmpArteId)
@@ -116,6 +115,7 @@ func CommentList(context *gin.Context){
 		pages = append(pages,i)
 	}
 
+
 	context.HTML(http.StatusOK,"commentlist.html",gin.H{
 		"commetList":commentList,
 		"allPage" : int(allPage),
@@ -123,10 +123,82 @@ func CommentList(context *gin.Context){
 		"page": page,
 		"prevPage":page-1,
 		"nextPage":page+1,
-		"cateid":arteid,
+		"aid":arteid,
 		"url": "/manage/comment/"+tmpArteId,
 
 	})
 
+}
 
+/*
+	评论详情
+ */
+func CommentInfo(context *gin.Context){
+
+	cid := context.Param("cid")
+	c_id,err := strconv.Atoi(cid)
+	if err != nil{
+		CommentList(context)
+		context.Abort()
+	}
+	comment := new(models.Comment)
+	err = comment.Load(c_id)
+	if err != nil{
+		CommentList(context)
+		context.Abort()
+	}
+
+	context.HTML(http.StatusOK,"commentinfo.html",gin.H{
+		"comment":comment,
+	})
+}
+
+/**
+	删除一条评论
+ */
+func DelComment(context *gin.Context){
+	var errcode int
+	var errinfo string
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
+	}()
+
+	c_id,ok := context.GetPostForm("cid")
+	if !ok{
+		errcode = -1
+		errinfo = "参数不全，请重试"
+		return
+	}
+	cid,err := strconv.Atoi(c_id)
+	if err != nil{
+		errcode = -1
+		errinfo = "参数错误，请重试"
+		return
+	}
+	a_id,ok := context.GetPostForm("aid")
+	if !ok{
+		errcode = -1
+		errinfo = "参数不全，请重试"
+		return
+	}
+	aid,err := strconv.Atoi(a_id)
+	if err != nil{
+		errcode = -1
+		errinfo = "参数错误，请重试"
+		return
+	}
+
+	//执行删除
+	code := models.DelComment(aid,cid)
+
+	if code < 0{
+		errcode = -2
+		errinfo = "删除失败，请刷新后重试!"
+		return
+	}
+
+	return
 }

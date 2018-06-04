@@ -43,7 +43,7 @@ func initMysqlConfig()error{
 
 //初始化mysql连接池
 func initMysql()(*sql.DB,error){
-	db, err := sql.Open("mysql", muser+":"+mpasswd+"@tcp("+maddress+")/lifei")
+	db, err := sql.Open("mysql", muser+":"+mpasswd+"@tcp("+maddress+")/lifei?multiStatements=true")
 	if err != nil {
 		return nil,err
 	}

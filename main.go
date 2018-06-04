@@ -54,7 +54,7 @@ func initRouter()*gin.Engine{
 	//标签页面
 	router.GET("/tag/*tagid",FrontWare(), controllers.TagIndex)
 	//添加一条回复
-	router.POST("/comment/add",SessionWare(),controllers.AddComment)
+	router.POST("/comment/addComment",SessionWare(),controllers.AddComment)
 	//留言板
 
 	//跳转到登录页面
@@ -98,7 +98,11 @@ func initRouter()*gin.Engine{
 	//添加文章
 	manageRouter.Any("/addArticle",controllers.AddArticle)
 	//删除文章
-	manageRouter.Any("/delArticle",controllers.AddArticle)
+	manageRouter.GET("/delArticle",controllers.DelArticle)
+	//查看评论详情
+	manageRouter.GET("/viewComment/:cid",controllers.CommentInfo)
+	//删除评论
+	manageRouter.POST("/delComment",controllers.DelComment)
 
 	//退出登录
 	manageRouter.GET("/logout",controllers.Logout)
@@ -109,7 +113,7 @@ func initRouter()*gin.Engine{
 	})
 
 	//404处理
-	router.NoRoute(NoRouteWare(),controllers.ErrNoRoute)
+	router.NoRoute(controllers.ToError)
 
 
 	return router
@@ -172,43 +176,6 @@ func NoSessionWare()gin.HandlerFunc{
 		}
 		session.Expire()
 		c.Set("session", session)
-		c.Next()
-	}
-}
-
-/**
-	没有找到路由专用中间件
- */
-func NoRouteWare()gin.HandlerFunc{
-	return func(c *gin.Context){
-
-		var wg sync.WaitGroup
-
-		//网站设置&&个人档案
-		webSet := new(models.Webset)
-		webSet.Load()
-
-
-		//推荐阅读
-		args := make(map[string]int)
-		args["page"] = 1
-		args["isshow"] = -1
-		args["pagesize"] = 10
-		args["offset"] = 0
-		article_ids := models.ArticleList(args)
-		articleList := make([]*models.Article,len(article_ids))
-		for pos,id := range article_ids{
-			wg.Add(1)
-			models.MultipleLoadArticle(id,pos,articleList,&wg)
-		}
-		wg.Wait()
-
-
-		gh := make(map[string]interface{})
-		gh["webSet"] = webSet
-		gh["articleList"] = articleList
-
-		c.Set("gh", gh)
 		c.Next()
 	}
 }

@@ -6,6 +6,7 @@ import (
 	log "github.com/alecthomas/log4go"
 	"sync"
 	"time"
+	"fmt"
 )
 //评论
 type Comment struct {
@@ -79,4 +80,17 @@ func (this *Comment) ArticleInfo()*Article{
 	article := new(Article)
 	article.Load(this.Articleid)
 	return article
+}
+
+
+/**
+	前台摘要显示
+ */
+func (this *Comment) FormatContent()string{
+	content := []rune(this.Content)
+	fmt.Println("------",len(content))
+	if len(content) > 25{
+		return string(content[:25]) + " ..."
+	}
+	return this.Content
 }

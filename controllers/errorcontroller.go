@@ -3,26 +3,59 @@ package controllers
 import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
-	"fmt"
+	"sync"
+	"blog/models"
+	"strings"
 )
 
 /**
-	没有找到路由
+	没有找到路由  /manage/index2
  */
-func ErrNoRoute(context *gin.Context){
+func ToError(context *gin.Context){
 
-	fmt.Println(context.Request.RequestURI)
+	requestUri := strings.ToUpper(context.Request.RequestURI)
+	if strings.HasPrefix(requestUri,"/MANAGE"){
+		//后台
+		gh := make(map[string]interface{})
 
-	//读取中间件传来的参数
-	tmp_gh,_ := context.Get("gh")
-	gh := tmp_gh.(map[string]interface{})
-	gh["errcode"] = "404"
-	gh["errinfo"] = "页面找不到了!"
+		gh["errcode"] = "404"
+		gh["errinfo"] = "页面找不到了!"
 
-	context.HTML(http.StatusOK,"error.html",gh)
+		context.HTML(http.StatusOK,"manage/error.html",gh)
+	}else{
+		//前台
+		var wg sync.WaitGroup
 
+		//网站设置&&个人档案
+		webSet := new(models.Webset)
+		webSet.Load()
+
+
+		//推荐阅读
+		args := make(map[string]int)
+		args["page"] = 1
+		args["isshow"] = -1
+		args["pagesize"] = 10
+		args["offset"] = 0
+		article_ids := models.ArticleList(args)
+		articleList := make([]*models.Article,len(article_ids))
+		for pos,id := range article_ids{
+			wg.Add(1)
+			models.MultipleLoadArticle(id,pos,articleList,&wg)
+		}
+		wg.Wait()
+
+
+		gh := make(map[string]interface{})
+		gh["webSet"] = webSet
+		gh["articleList"] = articleList
+
+		gh["errcode"] = "404"
+		gh["errinfo"] = "页面找不到了!"
+
+		context.HTML(http.StatusOK,"error.html",gh)
+	}
 }
-
 
 /**
 	缺少参数

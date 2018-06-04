@@ -15,7 +15,7 @@
     <div class="panel admin-panel">
         <div class="panel-head"><strong class="icon-reorder"> 文章列表</strong></div>
         <div class="padding border-bottom">
-            <a class="button border-yellow" href="/manage/addarticle"><span class="icon-plus-square-o"></span> 添加文章</a>
+            <a class="button border-yellow" href="/manage/addArticle"><span class="icon-plus-square-o"></span> 添加文章</a>
         </div>
         <table class="table table-hover text-center">
             <tr>
@@ -37,7 +37,7 @@
                     <td>{{$v.Read_count}}</td>
                     <td>{{$v.Comment_count}}</td>
                     <td>{{$v.PublishTime}}</td>
-                    <td><div class="button-group"> <a class="button border-red" href="javascript:void(0)" onclick="return del(1)"><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/commentList/{{$v.Id}}"><span class="icon-comment-o"></span> 查看评论</a> </div></td>
+                    <td><div class="button-group"> <a class="button border-red" href="javascript:void(0)" onclick="delArticle('{{$v.Id}}','{{$v.Categoryid}}');"><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/commentList/{{$v.Id}}"><span class="icon-comment-o"></span> 查看评论</a> </div></td>
                 </tr>
             {{end}}
             <tr>
@@ -63,7 +63,7 @@
     </div>
 </body>
 <script language="JavaScript">
-    var cid = '{{.cateid}}'
+    var cateid = '{{.cateid}}'
     function delArticle(aid,cid){
         if(confirm("您确定要提删除该文章吗?")){
             var aj = $.ajax( {

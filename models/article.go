@@ -22,6 +22,8 @@ type Article struct {
 	Isshow int `redis:"isshow"`
 }
 
+const article_field_cnt = 10
+
 /**
 	加载指定的文章
  */
@@ -33,10 +35,15 @@ func (this *Article) Load(id int) error{
 	key := "article:" + strconv.Itoa(id)
 	values,err := redis.Values(rconn.Do("HGETALL",key))
 	if err == nil && len(values) > 0{
-		err = redis.ScanStruct(values, this)
-		if err == nil {
-			return nil
+		if len(values) == article_field_cnt*2 {
+			err = redis.ScanStruct(values, this)
+			if err == nil {
+				return nil
+			}
+		}else{
+			rconn.Do("DEL",key)
 		}
+
 	}
 	sql := "select id,title,content,userid,categoryid,read_count,comment_count,publish_time,publish_date,isshow from b_article where id=?"
 	db := conn.GetMysqlConn()
@@ -192,8 +199,9 @@ func (this *Article) FormatPublishTime(format string)string{
 	前台摘要显示
  */
 func (this *Article) FormatContent()string{
-	if len(this.Content) > 500{
-		return this.Content[:500]
+	content := []rune(this.Content)
+	if len(content) > 500{
+		return string(content[:500]) + " ..."
 	}
 	return this.Content
 }

@@ -81,6 +81,9 @@ func Article(context *gin.Context){
 	err = article.Load(a_id)
 	if err != nil{
 		//数据错误或者id不正确
+		ToError(context)
+		context.Abort()
+		return
 	}
 	//累计浏览量
 	go AddReadCnt(a_id)

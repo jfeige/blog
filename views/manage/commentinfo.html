@@ -1,0 +1,79 @@
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="/static/css/pintuer.css">
+<link rel="stylesheet" href="/static/css/admin.css">
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/pintuer.js"></script>
+</head>
+<body>
+<div class="panel admin-panel">
+  <div class="panel-head"><strong><span class="icon-key"></span> 评论详情</strong></div>
+  <div class="body-content">
+    <form method="post" class="form-x" action="">
+      <div class="form-group">
+        <div class="label">
+          <label for="sitename">姓名：</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" id="name" name="name" size="50" value="{{.comment.Name}}" readonly/>
+        </div>
+      </div>
+      <div class="form-group">
+          <div class="label">
+              <label for="sitename">评论时间：</label>
+          </div>
+          <div class="field">
+              <input type="text" class="input w50" size="5" name="atime" id="atime" value="{{.comment.FormatAtime "2006-01-02 15:04:05"}}" readonly/>
+          </div>
+      </div>
+      <div class="form-group">
+        <div class="label">
+          <label for="sitename">内容：</label>
+        </div>
+        <div class="field">
+            <textarea  rows="12" cols="60" readonly>{{.comment.Content}}</textarea>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="label">
+          <label></label>
+        </div>
+        <div class="field">
+            <button class="button bg-main backward" type="button" onclick="history.go(-1);"> 返回</button>&nbsp;&nbsp;&nbsp;&nbsp;<button class="button bg-main icon-check-square-o" type="button" onclick="delComment('{{.comment.Articleid}}','{{.comment.Id}}');"> 删除</button>
+        </div>
+      </div>      
+    </form>
+  </div>
+</div>
+<script language="JavaScript">
+    function delComment(a_id,c_id){
+        if(confirm("您确定要提删除该评论吗?")){
+            var aj = $.ajax( {
+                url:'/manage/delComment',
+                data:{aid : a_id,cid:c_id},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("删除成功");
+                    }else{
+                        alert(data.errinfo);
+                    }
+                    window.location.href="/manage/commentList/0";
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/commentList/0";
+                },
+            });
+        }
+    }
+</script>
+</body></html>

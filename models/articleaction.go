@@ -317,7 +317,7 @@ func UpdateReadCnt(a_id,cnt int){
  */
 func DelArticle(aid,cateid int)int{
 	db := conn.GetMysqlConn()
-	sql := "delArticle(?,?)"
+	sql := "call delArticle(?,?)"
 
 	stmt,err := db.Prepare(sql)
 	if err != nil{
@@ -353,6 +353,10 @@ func DelArticle(aid,cateid int)int{
 	keys = append(keys,"articleList:0")
 	keys = append(keys,"category:" + strconv.Itoa(cateid))
 	keys = append(keys,"tagids:" + strconv.Itoa(aid))
+	keys = append(keys,"commentcnt:" + strconv.Itoa(aid))
+	keys = append(keys,"commentcnt:0")
+	keys = append(keys,"commentList:" + strconv.Itoa(aid))
+	keys = append(keys,"commentList:0")
 
 	_,err = rconn.Do("DEL",keys...)
 	if err != nil{

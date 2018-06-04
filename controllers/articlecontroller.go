@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"net/http"
 	"math"
+	"fmt"
 )
 
 
@@ -270,7 +271,8 @@ func DelArticle(context *gin.Context){
 			"errinfo":errinfo,
 		})
 	}()
-
+	fmt.Println(context.GetPostForm("arteid"))
+	fmt.Println(context.GetPostForm("cateid"))
 	a_id,ok := context.GetPostForm("arteid")
 	if !ok{
 		errcode = -1
