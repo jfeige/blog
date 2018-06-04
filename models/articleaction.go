@@ -159,6 +159,7 @@ func UpdateArticleInfo(a_id int,title,content,tagids string)int{
 	//首先移除所有的标签，然后再插入
 	sql = "delete from b_actmapptags where a_id=?";
 	stmt_d,err := tx.Prepare(sql)
+
 	if err != nil{
 		log.Error("UpdateArticleInfo has error:%v",err)
 		return -2
@@ -169,7 +170,6 @@ func UpdateArticleInfo(a_id int,title,content,tagids string)int{
 		log.Error("UpdateArticleInfo has error:%v",err)
 		return -2
 	}
-
 	tags := strings.Split(tagids,",")
 	for _,id := range tags{
 		sql = "insert into b_actmapptags(a_id,t_id) values(?,?)"
@@ -192,15 +192,18 @@ func UpdateArticleInfo(a_id int,title,content,tagids string)int{
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
+
 	keys := make([]interface{},0)
 	keys = append(keys,"article:" + strconv.Itoa(a_id))
 	keys = append(keys,"tagids:" + strconv.Itoa(a_id))
 
 	_,err = rconn.Do("DEL",keys...)
+
 	if err != nil{
 		log.Error("UpdateArticleInfo has error:%v",err)
 	}
 	return 0
+
 }
 
 /**
