@@ -5,7 +5,8 @@ import (
 	"blog/models"
 	"net/http"
 	"strconv"
-	"fmt"
+	"sync"
+	"math"
 )
 
 
@@ -24,7 +25,6 @@ func AddComment(context *gin.Context){
 			name = "guest"
 		}
 	}
-	fmt.Println("---name---",name)
 	//articleid
 	articleid,ok := context.GetPostForm("aid")
 	if !ok{
@@ -62,4 +62,71 @@ func AddComment(context *gin.Context){
 		"errcode":0,
 		"errinfo":"",
 	})
+}
+
+
+
+/**
+	后台评论列表
+ */
+func CommentList(context *gin.Context){
+	var wg sync.WaitGroup
+
+	tmpArteId := context.Param("arteid")
+	if tmpArteId != ""{
+		tmpArteId = tmpArteId[1:]
+	}
+
+	arteid,_ := strconv.Atoi(tmpArteId)
+	//如果没有指定文章id，则读取所有评论，降序排列
+
+	tmpPage,ok := context.GetQuery("page")
+	if !ok{
+		tmpPage = "1"
+	}
+	page,err := strconv.Atoi(tmpPage)
+	if err != nil || page < 1{
+		page = 1
+	}
+
+	allCnt := models.ManageCommentCnt(arteid)			//评论总数量
+	pagesize := 20
+	allPage := math.Ceil(float64(allCnt)/float64(pagesize))
+	if float64(page) > allPage{
+		page = 1
+	}
+
+	offset := (page - 1) * pagesize
+
+	args := make(map[string]int)
+	args["arteid"] = arteid
+	args["pagesize"] = pagesize
+	args["offset"] = offset
+
+	//评论页面，不分页
+	comment_list := models.ManageCommentList(args)
+	commentList := make([]*models.Comment,len(comment_list))
+	for pos,id := range comment_list{
+		wg.Add(1)
+		models.MultipleLoadComment(id,pos,commentList,&wg)
+	}
+	wg.Wait()
+	pages := make([]int,0)
+	for i := 1; i <= int(allPage);i++{
+		pages = append(pages,i)
+	}
+
+	context.HTML(http.StatusOK,"commentlist.html",gin.H{
+		"commetList":commentList,
+		"allPage" : int(allPage),
+		"pages": pages,
+		"page": page,
+		"prevPage":page-1,
+		"nextPage":page+1,
+		"cateid":arteid,
+		"url": "/manage/comment/"+tmpArteId,
+
+	})
+
+
 }

@@ -9,6 +9,7 @@ import (
 
 var(
 	BlogPageSize int
+	ReadChan chan int		//文章浏览量
 )
 
 var(
@@ -51,6 +52,8 @@ func InitBaseConfig(file string)error{
 	}
 	conn.db = db
 	conn.pool = initRedisPool()
+
+	ReadChan = make(chan int,1000)
 
 	return nil
 }

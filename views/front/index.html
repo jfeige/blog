@@ -1,14 +1,8 @@
 {{ define "front/index.html" }}
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<title>{{.webSet.Sitename}}</title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link href="/static/css/style.css" rel="stylesheet" type="text/css" />
-
-</head>
+{{template "header" .}}
 <body>
 <div class="main">
-  {{template "header" .}}
+  {{template "menu" .}}
   <div class="clr"></div>
   <div class="content">
     <div class="content_resize">
@@ -19,7 +13,7 @@
               <br/>
               <div class="clr"></div>
               <div class="clr"></div>
-              {{.Content}}
+              {{.FormatContent}}
               <p/>
               <p class="dateview"><span>{{.FormatPublishTime "Jan 02, 2006"}}</span><span>作者：{{.User}}</span><span>分类：<a href="/" target="_blank">{{.Category}}</a></span><span>阅读({{.Read_count}})</span><span>评论({{.Comment_count}})</span></p>
               <p/>

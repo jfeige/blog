@@ -17,8 +17,10 @@
         </div>
     </div>
 </div>
-
 <script type="text/javascript">
+    if (window != top){
+        top.location.href = location.href;
+    }
     function login(){
         loginname = $('#loginName').attr('value');
         password = $('#Possword').attr('value');
@@ -36,14 +38,12 @@
              cache:false,
              dataType:'json',
              success:function(data) {
-                 // if(data.ret == true ){
-                 //     alert("登录成功");
-                 // }else{
-                 //     alert("登录失败");
-                 // }
-                // window.location.href = "/index/1";
-                 alert(data.purl);
-                 window.location.href = data.purl;
+                 if(data.ret == true){
+                     window.location.href = data.purl;
+                 }else{
+                     alert("登录失败，请确认帐号密码是否正确!");
+                 }
+
              },
              error : function() {
                   alert("异常！");

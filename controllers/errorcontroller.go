@@ -3,12 +3,16 @@ package controllers
 import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
+	"fmt"
 )
 
 /**
 	没有找到路由
  */
 func ErrNoRoute(context *gin.Context){
+
+	fmt.Println(context.Request.RequestURI)
+
 	//读取中间件传来的参数
 	tmp_gh,_ := context.Get("gh")
 	gh := tmp_gh.(map[string]interface{})

@@ -1,22 +1,20 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<title>{{.webSet.Sitename}}</title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link href="/static/css/style.css" rel="stylesheet" type="text/css" />
+{{template "header" .}}
 <script type="text/javascript" src="/static/js/jquery.js"></script>
-
-</head>
+<link rel="stylesheet" href="/static/editormd/css/editormd.preview.min.css" />
+<link rel="stylesheet" href="/static/editormd/css/editormd.css" />
 <body>
 <div class="main">
-{{template "header" .}}
+{{template "menu" .}}
   <div class="clr"></div>
   <div class="content">
     <div class="content_resize">
       <div class="mainbar">
         <div class="article">
           <h2>{{.article.Title}}</h2><div class="clr"></div>
-          <p>{{.article.Content}}</p>
+
+          <div id="content" style="width:95%;">
+            <textarea  style="display:none;">{{.article.Content}}</textarea>
+        </div>
           <p>标签:
               {{range $k, $v := .article.Tag}}
                   <a href="/tag/{{$k}}">{{$v}}</a>
@@ -57,8 +55,23 @@
   </div>
 
 </div>
+<script src="/static/editormd/lib/marked.min.js"></script>
+<script src="/static/editormd/lib/prettify.min.js"></script>
+<script src="/static/editormd/editormd.min.js"></script>
 
 <script type="text/javascript">
+    editormd.markdownToHTML("content",{
+        htmlDecode      : "style,script,iframe",  // you can filter tags decode
+        emoji           : true,
+        taskList        : true,
+        tex             : true,  // 默认不解析
+        flowChart       : true,  // 默认不解析
+        sequenceDiagram : true,  // 默认不解析
+    });
+</script>
+
+<script type="text/javascript">
+
     function recommd(aid){
         content = $('#message').attr('value');
         if($.trim(content) == ""){

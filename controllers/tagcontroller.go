@@ -12,6 +12,11 @@ import (
 func TagIndex(context *gin.Context){
 
 	tmpTagid := context.Param("tagid")
+	if tmpTagid != ""{
+		tmpTagid = tmpTagid[1:]
+	}
+
+
 	if tmpTagid == ""{
 		gh := make(map[string]interface{})
 		gh["errinfo"] = ""

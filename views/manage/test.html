@@ -1,0 +1,47 @@
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <title>文章详情</title>
+    <link rel="stylesheet" href="/static/css/pintuer.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/pintuer.js"></script>
+    <link rel="stylesheet" href="/static/editormd/css/editormd.preview.min.css" />
+    <link rel="stylesheet" href="/static/editormd/css/editormd.css" />
+
+    <div id="content">
+        <textarea  style="width:800px;height:300px;" style="display:none;">这片文章主要为了解决无法从指定的列表中快速的查找对象，判断对象是否存在指定的列表中。
+里面保存了部分数据，和几个常用的方法，供大家参考使用。如果大家有更好的方案，欢迎大家提出来，共同讨论。
+```golang
+func main(){
+	fmt.Println("this is a main func")
+}
+```
+*　　*百度就是一坨屎，狗日的嘛都查不出来，谷歌是王道有时候人生就是这样，该来的不来，不该开的，天天来，谁又能说的清除呢
+*　　*百度就是一坨屎，狗日的嘛都查不出来，谷歌是王道有时候人生就是这样，该来的不来，不该开的，天天来，谁又能说的清除呢
+</textarea>
+
+
+    </div>
+
+    <script src="/static/editormd/lib/marked.min.js"></script>
+    <script src="/static/editormd/lib/prettify.min.js"></script>
+    <script src="/static/editormd/editormd.min.js"></script>
+
+    <script type="text/javascript">
+        editormd.markdownToHTML("content",{
+            htmlDecode      : "style,script,iframe",  // you can filter tags decode
+            emoji           : true,
+            taskList        : true,
+            tex             : true,  // 默认不解析
+            flowChart       : true,  // 默认不解析
+            sequenceDiagram : true,  // 默认不解析
+        });
+    </script>
+</head>
+<body>
+
+</body></html>

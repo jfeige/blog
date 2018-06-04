@@ -24,6 +24,11 @@ func CategoryFront(context *gin.Context){
 	}
 
 	tmpPage := context.Param("page")
+	if tmpPage != ""{
+		tmpPage = tmpPage[1:]
+	}
+
+
 	page,err := strconv.Atoi(tmpPage)
 	if err != nil || page < 1{
 		page = 1
@@ -224,3 +229,4 @@ func UpCatetory(context *gin.Context){
 	}
 	return
 }
+

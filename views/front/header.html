@@ -1,22 +1,8 @@
 {{define "header"}}
-    <div class="header">
-        <div class="header_resize">
-            <div class="logo">
-                <h1><a href="#">{{.webSet.Sitename}}</a><small>{{.webSet.Sitedesc}}</small></h1>
-            </div>
-            <div class="clr"></div>
-            <div class="menu_nav">
-                <ul>
-                    <li class="active"><a href="/">首页</a></li>
-                    <li><a href="/category/1/">慢生活</a></li>
-                    <li><a href="/category/2/">程序人生</a></li>
-                    <li><a href="/category/3/">经典转载</a></li>
-                    <li><a href="/">关于我</a></li>
-                    <li class="last"><a href="/">留言板</a></li>
-                </ul>
-
-            </div>
-            <div class="clr"></div>
-        </div>
-    </div>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>{{.webSet.Sitename}}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="/static/css/style.css" rel="stylesheet" type="text/css" />
+</head>
 {{end}}

@@ -70,3 +70,13 @@ func (this *Comment) FormatAtime(format string)string{
 	return time.Unix(int64(this.Atime),0).Format(format)
 
 }
+
+
+/**
+	返回评论所在文章信息
+ */
+func (this *Comment) ArticleInfo()*Article{
+	article := new(Article)
+	article.Load(this.Articleid)
+	return article
+}

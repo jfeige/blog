@@ -36,7 +36,7 @@
           <label for="sitename">文章数量：</label>
         </div>
         <div class="field">
-          <input type="text" class="input w50"  readonly value="{{.cateotry.Article_cnt}}" />&nbsp;&nbsp;{{if gt .cateotry.Article_cnt 0}}<button class="button bg-main backward" type="button" onclick="window.location.href='/manage/article/{{.cateotry.Id}}'"> 查看</button>{{end}}
+          <input type="text" class="input w50"  readonly value="{{.cateotry.Article_cnt}}" />&nbsp;&nbsp;{{if gt .cateotry.Article_cnt 0}}<button class="button bg-main backward" type="button" onclick="window.location.href='/manage/articleList/{{.cateotry.Id}}'"> 查看</button>{{end}}
         </div>
       </div>
       

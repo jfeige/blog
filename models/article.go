@@ -54,7 +54,6 @@ func (this *Article) Load(id int) error{
 	return nil
 }
 
-
 /**
 	多线程加载Article对象
  */
@@ -152,6 +151,17 @@ func (this *Article) Tag()map[int]string{
 }
 
 /**
+	判断指定的tagID是否是
+ */
+func (this *Article) IsTag(tid int)bool{
+	tags := this.Tag()
+
+	_,ok := tags[tid]
+
+	return ok
+}
+
+/**
 	格式化日期和时间
  */
 func (this *Article) PublishTime(flags ...int)string{
@@ -175,4 +185,15 @@ func (this *Article) PublishTime(flags ...int)string{
 func (this *Article) FormatPublishTime(format string)string{
 
 	return time.Unix(this.Publish_time,0).Format(format)
+}
+
+
+/**
+	前台摘要显示
+ */
+func (this *Article) FormatContent()string{
+	if len(this.Content) > 500{
+		return this.Content[:500]
+	}
+	return this.Content
 }
