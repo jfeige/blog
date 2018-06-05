@@ -8,13 +8,11 @@ import (
 	"strconv"
 	"math"
 	"fmt"
-	"time"
 )
 
 
 //首页
 func Index(context *gin.Context){
-	fmt.Println("---1---",time.Now().UnixNano()/1e6)
 	var wg sync.WaitGroup
 	//文章列表
 	tmpPage := context.Param("page")
@@ -33,7 +31,6 @@ func Index(context *gin.Context){
 	if float64(page) > allPage{
 		page = 1
 	}
-	fmt.Println("---2---",time.Now().UnixNano()/1e6)
 	offset := (page - 1) * pagesize
 
 	args := make(map[string]int)
@@ -42,14 +39,16 @@ func Index(context *gin.Context){
 	args["offset"] = offset
 
 	article_ids := models.ArticleList(args)
-	fmt.Println("---3---",time.Now().UnixNano()/1e6)
 	articleList := make([]*models.Article,len(article_ids))
 	for pos,id := range article_ids{
 		wg.Add(1)
 		models.MultipleLoadArticle(id,pos,articleList,&wg)
 	}
 	wg.Wait()
-	fmt.Println("---4---",time.Now().UnixNano()/1e6)
+
+	//过滤空数据
+	articleList = models.FilterNilArticle(articleList)
+
 	pages := make([]int,0)
 	for i := 1; i <= int(allPage);i++{
 		pages = append(pages,i)
@@ -64,7 +63,6 @@ func Index(context *gin.Context){
 	gh["page"] = page
 	gh["url"] = "/index"
 
-	fmt.Println("---5---",time.Now().UnixNano()/1e6)
 	context.HTML(http.StatusOK,"front/index.html",gh)
 }
 
@@ -102,6 +100,7 @@ func Article(context *gin.Context){
 	tmp_gh,_ := context.Get("gh")
 	gh := tmp_gh.(map[string]interface{})
 	gh["commentList"] = commentList
+	gh["cns"] = len(commentList)
 	gh["article"] = article
 
 	context.HTML(http.StatusOK,"article.html",gh)
