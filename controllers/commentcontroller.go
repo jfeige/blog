@@ -16,7 +16,7 @@ import (
 func AddComment(context *gin.Context){
 
 	var errcode = -1
-	var errinfo = "参数不全，请刷新该页面重试"
+	var errinfo = "参数不全，请刷新该页面重试!"
 	defer func(){
 		context.JSON(http.StatusOK,gin.H{
 			"errcode":errcode,
@@ -33,6 +33,25 @@ func AddComment(context *gin.Context){
 	a_id,err := strconv.Atoi(aid)
 	if err != nil{
 		//参数错误
+		return
+	}
+	tmp_tp,ok := context.GetPostForm("type")
+	if !ok{
+		return
+	}
+	if !models.InArray(tmp_tp,[]string{"0","1"}){
+		//参数错误
+		return
+	}
+	tp,_ := strconv.Atoi(tmp_tp)   //0:评论;1:回复
+	tmp_cid,ok := context.GetPostForm("cid")
+	if !ok && tp == 1{
+		errinfo = "参数错误，请刷新后重试!"
+		return
+	}
+	cid,err := strconv.Atoi(tmp_cid)
+	if err != nil{
+		errinfo = "参数错误，请刷新后重试!"
 		return
 	}
 	name,ok := context.GetPostForm("name")
@@ -53,7 +72,7 @@ func AddComment(context *gin.Context){
 		errinfo = "内容不能为空"
 		return
 	}
-	models.AddComment(a_id,name,content)
+	models.AddComment(a_id,tp,cid,name,content)
 
 	errcode = 0
 	errinfo = ""
