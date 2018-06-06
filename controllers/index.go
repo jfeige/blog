@@ -80,7 +80,12 @@ func Article(context *gin.Context){
 	err = article.Load(a_id)
 	if err != nil{
 		//数据错误或者id不正确
-		ToError(context)
+		errinfo := make(map[string]interface{})
+
+		errinfo["errcode"] = "404"
+		errinfo["errinfo"] = "页面找不到了!"
+
+		ToError(context,errinfo)
 		context.Abort()
 		return
 	}
