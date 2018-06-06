@@ -27,6 +27,7 @@
                 <th width="120">ID</th>
                 <th>姓名</th>
                 <th>所在文章</th>
+                <th>类型</th>
                 <th width="25%">内容</th>
                 <th width="120">留言时间</th>
                 <th>操作</th>
@@ -36,6 +37,7 @@
                     <td><input type="checkbox" name="id[]" value="{{$v.Id}}" />{{$v.Id}}</td>
                     <td>{{$v.Name}}</td>
                     <td><a href="/manage/articleinfo/{{$v.ArticleInfo.Id}}">{{$v.ArticleInfo.Title}}</a></td>
+                    <td>{{if eq $v.Type 0}}<span style="color: #9d1e15">评论</span>{{else}}<span style="color: rgba(45,14,34,0.5)">回复</span>{{end}}</td>
                     <td>{{$v.FormatContent}}</td>
                     <td>{{$v.FormatAtime "2006/01/02 15:04:05"}}</td>
                     <td><div class="button-group"> <a class="button border-red" href="javascript:void(0)" onclick="delComment('{{$v.Articleid}}','{{$v.Id}}');"><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/viewComment/{{$v.Id}}"><span class="icon-comment-o"></span> 查看</a></div></td>
