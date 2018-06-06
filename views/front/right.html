@@ -14,7 +14,25 @@
           <div class="clr"></div>
           <ul class="ex_menu">
           {{range $k, $v := .recentList}}
-              <li><a href="/article/{{$v.Id}}" title="{{$v.Title}}">{{$v.Title}}</a></li>
+              <li><a href="/article/{{$v.Id}}" title="{{$v.FormatTitle}}">{{$v.FormatTitle}}</a></li>
+          {{end}}
+          </ul>
+      </div>
+      <div class="gadget">
+          <h2><span>热门文章</span></h2>
+          <div class="clr"></div>
+          <ul class="ex_menu">
+          {{range $k, $v := .hotArticleList}}
+              <li><a href="/article/{{$v.Id}}" target="_blank"><span style="color: #000000;font-size: 15px">{{$v.FormatTitle}}</span></a><br/>阅读量:&nbsp;&nbsp;{{$v.Read_count}}</li>
+          {{end}}
+          </ul>
+      </div>
+      <div class="gadget">
+          <h2><span>最新评论</span></h2>
+          <div class="clr"></div>
+          <ul class="ex_menu">
+          {{range $k, $v := .commentList}}
+              <li><a href="/article/{{$v.ArticleInfo.Id}}" target="_blank"><span style="color: #000000;font-size: 15px">{{$v.ArticleInfo.FormatTitle}}</span></a><br/>{{$v.Name}}:&nbsp;&nbsp;{{$v.FormatContent}}</li>
           {{end}}
           </ul>
       </div>
