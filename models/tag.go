@@ -31,14 +31,10 @@ func (this *Tag) Load(id int)error{
 		}
 
 	}
-	sql := "select id,tag from b_tag where id=?"
+	sql := "select id,tag from b_tag where id=? limit 1"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		return err
-	}
-	defer stmt.Close()
-	row := stmt.QueryRow(id)
+
+	row := db.QueryRow(sql,id)
 	err = row.Scan(&this.Id,&this.Tag)
 	if err != nil{
 		return err
@@ -60,4 +56,17 @@ func MultipleLoadTag(id int,position int,tag_list []*Tag,wg *sync.WaitGroup){
 		tag_list[position] = tag
 	}
 	return
+}
+
+
+func FilterNilTag(tagList []*Tag)[]*Tag{
+	//过滤空数据
+	for k,v := range tagList{
+		if v == nil && k  < len(tagList)-1{
+			tagList = append(tagList[:k],tagList[k+1:]...)
+		}else if k == len(tagList)-1 && v == nil{
+			tagList = tagList[:len(tagList)-1]
+		}
+	}
+	return tagList
 }

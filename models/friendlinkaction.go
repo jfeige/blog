@@ -25,6 +25,7 @@ func FLink_List()[]int{
 			fmt.Println(err)
 			return list
 		}
+		defer rows.Close()
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
 		var id,sort int

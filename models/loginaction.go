@@ -12,15 +12,9 @@ func Login(loginname,password string)(*User,bool){
 	sql := "select id,name,passwd,nickname from b_user where name=? and passwd=? limit 1"
 	db := conn.GetMysqlConn()
 
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		log.Error("db.Prepare has error:%v",err)
-		return nil,false
-	}
-	row := stmt.QueryRow(loginname,password)
 
+	row := db.QueryRow(sql,loginname,password)
 	user := new(User)
-
 	err = row.Scan(&user.Id,&user.Name,&user.Passwd,&user.Nickname)
 
 	if err != nil{

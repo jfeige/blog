@@ -87,7 +87,7 @@ func Tag(context *gin.Context){
 	tagList := make([]*models.Tag,len(tag_list))
 	for pos,id := range tag_list{
 		wg.Add(1)
-		models.MultipleLoadTag(id,pos,tagList,&wg)
+		go models.MultipleLoadTag(id,pos,tagList,&wg)
 	}
 
 	wg.Wait()

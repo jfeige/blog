@@ -19,22 +19,21 @@ func ArticleInfo(context *gin.Context){
 	artiId,err := strconv.Atoi(id)
 	if err != nil || artiId <= 0{
 		//参数错误，跳转到首页
-		context.Redirect(0,"/")
+		context.Redirect(302,"/")
 	}
 	//根据文章id读取
 	article := new(models.Article)
 	err = article.Load(artiId)
 	if err != nil{
 		//数据错误或者id不正确
-
+		context.Redirect(302,"/")
 	}
 	var wg sync.WaitGroup
-
 	categroy_list := models.CategoryList()
 	categoryList := make([]*models.Category,len(categroy_list))
 	for pos,id := range categroy_list{
 		wg.Add(1)
-		models.MultipleLoadCategory(id,pos,categoryList,&wg)
+		go models.MultipleLoadCategory(id,pos,categoryList,&wg)
 	}
 
 	//标签
@@ -42,7 +41,7 @@ func ArticleInfo(context *gin.Context){
 	tagList := make([]*models.Tag,len(tag_list))
 	for pos,id := range tag_list{
 		wg.Add(1)
-		models.MultipleLoadTag(id,pos,tagList,&wg)
+		go models.MultipleLoadTag(id,pos,tagList,&wg)
 	}
 
 	wg.Wait()
@@ -94,7 +93,7 @@ func ArticleList(context *gin.Context){
 	articleList := make([]*models.Article,len(article_ids))
 	for pos,id := range article_ids {
 		wg.Add(1)
-		models.MultipleLoadArticle(id,pos,articleList,&wg)
+		go models.MultipleLoadArticle(id,pos,articleList,&wg)
 	}
 	wg.Wait()
 	//暂不考虑分页显示
@@ -238,7 +237,7 @@ func AddArticle(context *gin.Context){
 		categoryList := make([]*models.Category,len(categroy_list))
 		for pos,id := range categroy_list{
 			wg.Add(1)
-			models.MultipleLoadCategory(id,pos,categoryList,&wg)
+			go models.MultipleLoadCategory(id,pos,categoryList,&wg)
 		}
 
 		//标签
@@ -246,7 +245,7 @@ func AddArticle(context *gin.Context){
 		tagList := make([]*models.Tag,len(tag_list))
 		for pos,id := range tag_list{
 			wg.Add(1)
-			models.MultipleLoadTag(id,pos,tagList,&wg)
+			go models.MultipleLoadTag(id,pos,tagList,&wg)
 		}
 
 		wg.Wait()

@@ -32,14 +32,10 @@ func (this *FriendLink) Load(id int) error{
 			rconn.Do("DEL",key)
 		}
 	}
-	sql := "select id,webname,weburl,sort from b_friendlink where id=?"
+	sql := "select id,webname,weburl,sort from b_friendlink where id=? limit 1"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		return err
-	}
-	defer stmt.Close()
-	row := stmt.QueryRow(id)
+
+	row := db.QueryRow(sql,id)
 	err = row.Scan(&this.Id,&this.Webname,&this.Weburl,&this.Sort)
 	if err != nil{
 		return err
@@ -61,4 +57,16 @@ func MultipleLoadFLink(id int,position int,flink_list []*FriendLink,wg *sync.Wai
 		flink_list[position] = flink
 	}
 	return
+}
+
+func FilterNilFriendLink(flinkList []*FriendLink)[]*FriendLink{
+	//过滤空数据
+	for k,v := range flinkList{
+		if v == nil && k  < len(flinkList)-1{
+			flinkList = append(flinkList[:k],flinkList[k+1:]...)
+		}else if k == len(flinkList)-1 && v == nil{
+			flinkList = flinkList[:len(flinkList)-1]
+		}
+	}
+	return flinkList
 }

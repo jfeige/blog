@@ -20,7 +20,7 @@ func ArticleCnt(cateid ...int)int{
 	}
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
-	key := "article_cnt:" + strconv.Itoa(cid)
+	key := "articleList:cnt:" + strconv.Itoa(cid)
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 	if !exists{
 		db := conn.GetMysqlConn()
@@ -30,13 +30,7 @@ func ArticleCnt(cateid ...int)int{
 			sql = "select count(1) from b_article where categoryid=? "
 			pargs = append(pargs,cid)
 		}
-		stmt,err := db.Prepare(sql)
-		if err != nil{
-			log.Error(fmt.Sprintf("db.Prepare has error:",err))
-			return	0
-		}
-		defer stmt.Close()
-		row := stmt.QueryRow(pargs...)
+		row := db.QueryRow(sql,pargs...)
 		err = row.Scan(&cnt)
 		if err != nil{
 			log.Error(fmt.Sprintf("row.Scan has error:",err))
@@ -80,41 +74,48 @@ func ArticleList(args map[string]int)[]int{
 	if !ok || cateid < 0{
 		cateid = 0
 	}
+	order,ok := args["order"]		//order 0:publish_time;1:read_count阅读量
+	if !ok{
+		order = 0
+	}
 
 	if !InArray(isshow,[]int{-1,0,1}){
 		isshow = -1
 	}
+	if !InArray(order,[]int{0,1}){
+		order = 0
+	}
 
-	key := "articleList:"  + strconv.Itoa(cateid)
+	key := "articleList:"  + strconv.Itoa(cateid) + "|" + strconv.Itoa(order)
+	fmt.Println(key)
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 	if !exists{
 		db := conn.GetMysqlConn()
 		pargs := make([]interface{},0)
-		sql := "select id,publish_time from b_article order by publish_time desc "
+		sql := "select id,publish_time,read_count from b_article order by publish_time desc "
 		if cateid > 0{
-			sql = "select id,publish_time from b_article where categoryid=? order by publish_time desc "
+			sql = "select id,publish_time,read_count from b_article where categoryid=? order by publish_time desc "
 			pargs = append(pargs,cateid)
 		}
-		stmt,err := db.Prepare(sql)
-		if err != nil{
-			log.Error(fmt.Sprintf("db.Prepare has error:",err))
-			return	list
-		}
-		defer stmt.Close()
 
-		rows,err := stmt.Query(pargs...)
+		rows,err := db.Query(sql,pargs...)
 		if err != nil{
 			log.Error(fmt.Sprintf("stmt.Query has error:",err))
 			return	list
 		}
+		defer rows.Close()
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
-		var id,publish_time int
+		var id,publish_time,read_count int
 		for rows.Next(){
-			rows.Scan(&id,&publish_time)
-			rargs = append(rargs,publish_time,id)
+			rows.Scan(&id,&publish_time,&read_count)
+			if order == 0{
+				rargs = append(rargs,publish_time,id)
+			}else{
+				rargs = append(rargs,read_count,id)
+			}
 		}
 		if len(rargs) > 1{
 			rconn.Send("ZADD",rargs...)
@@ -145,27 +146,14 @@ func UpdateArticleInfo(a_id int,title,content,tagids string)int{
 		return -2
 	}
 	defer tx.Rollback()
-	stmt_a,err := tx.Prepare(sql)
-	if err != nil{
-		log.Error("UpdateArticleInfo has error:%v",err)
-		return -2
-	}
-	defer stmt_a.Close()
-	_,err = stmt_a.Exec(title,content,a_id)
+	_,err = tx.Exec(sql,title,content,a_id)
 	if err != nil{
 		log.Error("UpdateArticleInfo has error:%v",err)
 		return -2
 	}
 	//首先移除所有的标签，然后再插入
 	sql = "delete from b_actmapptags where a_id=?";
-	stmt_d,err := tx.Prepare(sql)
-
-	if err != nil{
-		log.Error("UpdateArticleInfo has error:%v",err)
-		return -2
-	}
-	defer stmt_d.Close()
-	_,err = stmt_d.Exec(a_id)
+	_,err = tx.Exec(sql,a_id)
 	if err != nil{
 		log.Error("UpdateArticleInfo has error:%v",err)
 		return -2
@@ -173,13 +161,7 @@ func UpdateArticleInfo(a_id int,title,content,tagids string)int{
 	tags := strings.Split(tagids,",")
 	for _,id := range tags{
 		sql = "insert into b_actmapptags(a_id,t_id) values(?,?)"
-		stmt_t,err := tx.Prepare(sql)
-		if err != nil{
-			log.Error("UpdateArticleInfo has error:%v",err)
-			return -2
-		}
-		defer stmt_t.Close()
-		_,err = stmt_t.Exec(a_id,id)
+		_,err = tx.Exec(sql,a_id,id)
 		if err != nil{
 			log.Error("UpdateArticleInfo has error:%v",err)
 			return -2
@@ -219,13 +201,8 @@ func AddArticle(cateid int,title,content,tagids string) int{
 		return -2
 	}
 	defer tx.Rollback()
-	stmt_a,err := tx.Prepare(sql)
-	if err != nil{
-		log.Error("AddArticle has error:%v",err)
-		return -2
-	}
-	defer stmt_a.Close()
-	result,err := stmt_a.Exec(title,content,cateid,time.Now().Unix(),time.Now().Format("20060102"))
+
+	result,err := tx.Exec(sql,title,content,cateid,time.Now().Unix(),time.Now().Format("20060102"))
 	if err != nil{
 		log.Error("AddArticle has error:%v",err)
 		return -2
@@ -239,13 +216,7 @@ func AddArticle(cateid int,title,content,tagids string) int{
 	tags := strings.Split(tagids,",")
 	for _,id := range tags{
 		sql = "insert into b_actmapptags(a_id,t_id) values(?,?)"
-		stmt_t,err := tx.Prepare(sql)
-		if err != nil{
-			log.Error("AddArticle has error:%v",err)
-			return -2
-		}
-		defer stmt_t.Close()
-		_,err = stmt_t.Exec(a_id,id)
+		_,err = tx.Exec(sql,a_id,id)
 		if err != nil{
 			log.Error("AddArticle has error:%v",err)
 			return -2
@@ -254,13 +225,7 @@ func AddArticle(cateid int,title,content,tagids string) int{
 
 
 	sql = "update b_category set article_cnt=article_cnt+1 where id=?"
-	stmt_c,err := tx.Prepare(sql)
-	if err != nil{
-		log.Error("AddArticle has error:%v",err)
-		return -2
-	}
-	defer stmt_c.Close()
-	_,err = stmt_c.Exec(cateid)
+	_,err = tx.Exec(sql,cateid)
 	if err != nil{
 		log.Error("AddArticle has error:%v",err)
 		return -2
@@ -270,12 +235,12 @@ func AddArticle(cateid int,title,content,tagids string) int{
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
+	key := "articleList:*"
+	DelKeys(key)
+
 	keys := make([]interface{},0)
-	keys = append(keys,"article_cnt:" + strconv.Itoa(cateid))
-	keys = append(keys,"article_cnt:0")
-	keys = append(keys,"articleList:"  + strconv.Itoa(cateid))
-	keys = append(keys,"articleList:0")
 	keys = append(keys,"category:" + strconv.Itoa(cateid))
+	keys = append(keys,"category:0")
 
 	_,err = rconn.Do("DEL",keys...)
 	if err != nil{
@@ -291,13 +256,8 @@ func AddArticle(cateid int,title,content,tagids string) int{
 func UpdateReadCnt(a_id,cnt int){
 	sql := "update b_article set read_count = read_count + ? where id=?"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		log.Error("UpdateReadCnt has error:%v",err)
-		return
-	}
-	defer stmt.Close()
-	_,err = stmt.Exec(cnt,a_id)
+
+	_,err = db.Exec(sql,cnt,a_id)
 	if err != nil{
 		log.Error("UpdateReadCnt has error:%v",err)
 		return
@@ -318,17 +278,9 @@ func UpdateReadCnt(a_id,cnt int){
 func DelArticle(aid,cateid int)int{
 	db := conn.GetMysqlConn()
 	sql := "call delArticle(?,?)"
-
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		log.Error("DelArticle has error:%v",err)
-		return -2
-	}
-	defer stmt.Close()
-	row := stmt.QueryRow(aid,cateid)
+	row := db.QueryRow(sql,aid,cateid)
 
 	var errcode int
-
 	err = row.Scan(&errcode)
 	if err != nil{
 		log.Error("DelArticle has error:%v",err)
@@ -337,26 +289,18 @@ func DelArticle(aid,cateid int)int{
 	if errcode < 0{
 		return errcode
 	}
-	//key := "article_cnt:" + strconv.Itoa(cid)
-	//key := "articleList:"  + strconv.Itoa(cateid)
-	//key := "category:" + strconv.Itoa(id)
-	//key := "commentcnt:" + strconv.Itoa(arteid)
-	//key := "tagids:" + strconv.Itoa(this.Id)
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
+	key := "articleList:*"
+	DelKeys(key)
+	key = "commentList:*"
+	DelKeys(key)
+
 	keys := make([]interface{},0)
 	keys = append(keys,"article:" + strconv.Itoa(aid))
-	keys = append(keys,"article_cnt:" + strconv.Itoa(cateid))
-	keys = append(keys,"article_cnt:0")
-	keys = append(keys,"articleList:" + strconv.Itoa(aid))
-	keys = append(keys,"articleList:0")
 	keys = append(keys,"category:" + strconv.Itoa(cateid))
 	keys = append(keys,"tagids:" + strconv.Itoa(aid))
-	keys = append(keys,"commentcnt:" + strconv.Itoa(aid))
-	keys = append(keys,"commentcnt:0")
-	keys = append(keys,"commentList:" + strconv.Itoa(aid))
-	keys = append(keys,"commentList:0")
 
 	_,err = rconn.Do("DEL",keys...)
 	if err != nil{

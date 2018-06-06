@@ -23,7 +23,6 @@ func ToError(context *gin.Context){
 
 		context.HTML(http.StatusOK,"manage/error.html",gh)
 	}else{
-		//前台
 		var wg sync.WaitGroup
 
 		//网站设置&&个人档案

@@ -32,14 +32,10 @@ func (this *Category) Load(id int)error{
 		}
 
 	}
-	sql := "select id,name,article_cnt,sort from b_category where id=?"
+	sql := "select id,name,article_cnt,sort from b_category where id=? limit 1"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		return err
-	}
-	defer stmt.Close()
-	row := stmt.QueryRow(id)
+
+	row := db.QueryRow(sql,id)
 	err = row.Scan(&this.Id,&this.Name,&this.Article_cnt,&this.Sort)
 	if err != nil{
 		return err
@@ -60,4 +56,16 @@ func MultipleLoadCategory(id int,position int,category_list []*Category,wg *sync
 		category_list[position] = category
 	}
 	return
+}
+
+func FilterNilCategory(categoryList []*Category)[]*Category{
+	//过滤空数据
+	for k,v := range categoryList{
+		if v == nil && k  < len(categoryList)-1{
+			categoryList = append(categoryList[:k],categoryList[k+1:]...)
+		}else if k == len(categoryList)-1 && v == nil{
+			categoryList = categoryList[:len(categoryList)-1]
+		}
+	}
+	return categoryList
 }

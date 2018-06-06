@@ -6,16 +6,20 @@ import (
 	log "github.com/alecthomas/log4go"
 	"sync"
 	"time"
-	"fmt"
 )
 //评论
 type Comment struct {
 	Id int `redis:"id"`
 	Articleid int `redis:"articleid"`
 	Name string `redis:"name"`
+	Cid int `redis:"cid"`
+	Type int `redis:"type"`
 	Content string  `redis:"content"`
 	Atime int64 `redis:"atime"`
+	Ordertime float64 `redis:"ordertime"`
 }
+
+const comment_field_cnt = 8
 
 /**
 	加载指定的评论
@@ -28,21 +32,21 @@ func (this *Comment) Load(id int) error{
 	key := "comment:" + strconv.Itoa(id)
 	values,err := redis.Values(rconn.Do("HGETALL",key))
 	if err == nil && len(values) > 0{
-		err = redis.ScanStruct(values, this)
-		if err == nil {
-			return nil
+		if len(values) == comment_field_cnt * 2{
+			err = redis.ScanStruct(values, this)
+			if err == nil {
+				return nil
+			}
+		}else{
+			rconn.Do("DEL",key)
 		}
+
 	}
-	sql := "select id,articleid,name,content,atime from b_comment where id=?"
+	sql := "select id,articleid,name,cid,type,content,atime,ordertime from b_comment where id=? limit 1"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		log.Error("db.Prepare() has error:%v",err)
-		return err
-	}
-	defer stmt.Close()
-	row := stmt.QueryRow(id)
-	err = row.Scan(&this.Id,&this.Articleid,&this.Name,&this.Content,&this.Atime)
+
+	row := db.QueryRow(sql,id)
+	err = row.Scan(&this.Id,&this.Articleid,&this.Name,&this.Cid,&this.Type,&this.Content,&this.Atime,&this.Ordertime)
 	if err != nil{
 		log.Error("row.Scan() has error:%v",err)
 		return err
@@ -62,6 +66,18 @@ func MultipleLoadComment(id int,position int,comment_list []*Comment,wg *sync.Wa
 		comment_list[position] = comment
 	}
 	return
+}
+
+func FilterNilComment(commentList []*Comment)[]*Comment{
+	//过滤空数据
+	for k,v := range commentList{
+		if v == nil && k  < len(commentList)-1{
+			commentList = append(commentList[:k],commentList[k+1:]...)
+		}else if k == len(commentList)-1 && v == nil{
+			commentList = commentList[:len(commentList)-1]
+		}
+	}
+	return commentList
 }
 
 
@@ -88,7 +104,6 @@ func (this *Comment) ArticleInfo()*Article{
  */
 func (this *Comment) FormatContent()string{
 	content := []rune(this.Content)
-	fmt.Println("------",len(content))
 	if len(content) > 25{
 		return string(content[:25]) + " ..."
 	}

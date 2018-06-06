@@ -20,6 +20,7 @@ func TagList()[]int{
 			log.Error("db.Query() has error:%v",err)
 			return list
 		}
+		defer rows.Close()
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
 		var id int
@@ -59,14 +60,8 @@ func AddTag(tagName string)(errcode int){
 		return
 	}
 	sql = "insert into b_tag(tag) values(?)"
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		log.Error("AddTag has error:%v",err)
-		errcode = -3
-		return
-	}
-	defer stmt.Close()
-	_,err = stmt.Exec(tagName)
+
+	_,err = db.Exec(sql,tagName)
 	if err != nil{
 		log.Error("AddTag has error:%v",err)
 		errcode = -3
@@ -95,13 +90,8 @@ func DelTag(id string)int {
 	//获取有哪些文章引用了该标签
 	sql := "select a_id from b_actmapptags where t_id=?"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		log.Error("DelTag has error:%v",err)
-		return -2
-	}
-	defer stmt.Close()
-	rows,err := stmt.Query(id)
+
+	rows,err := db.Query(sql,id)
 	if err != nil{
 		log.Error("DelTag has error:%v",err)
 		return -2
@@ -121,26 +111,16 @@ func DelTag(id string)int {
 		log.Error("DelTag has error:%v",err)
 		return -2
 	}
-	stmt_tag,err := tx.Prepare(sql)
-	if err != nil{
-		log.Error("DelTag has error:%v",err)
-		return -2
-	}
-	_,err = stmt_tag.Exec(id)
+	defer tx.Rollback()
+	_,err = tx.Exec(sql,id)
 	if err != nil{
 		log.Error("DelTag has error:%v",err)
 		return -2
 	}
 	sql = "delete from b_actmapptags where t_id=?"
-	stmt_article,err := tx.Prepare(sql)
+
+	_,err = tx.Exec(sql,id)
 	if err != nil{
-		tx.Rollback()
-		log.Error("DelTag has error:%v",err)
-		return -2
-	}
-	_,err = stmt_article.Exec(id)
-	if err != nil{
-		tx.Rollback()
 		log.Error("DelTag has error:%v",err)
 		return -2
 	}

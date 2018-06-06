@@ -26,12 +26,8 @@ func (this *User) Load(id int)error{
 	}
 	sql := "select id,name,passwd,nickname from b_user where id=?"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		return err
-	}
-	defer stmt.Close()
-	row := stmt.QueryRow(id)
+
+	row := db.QueryRow(sql,id)
 	err = row.Scan(&this.Id,&this.Name,&this.Passwd,&this.Nickname)
 	if err != nil{
 		return err

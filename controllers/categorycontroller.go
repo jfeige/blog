@@ -53,7 +53,7 @@ func CategoryFront(context *gin.Context){
 	articleList := make([]*models.Article,len(article_ids))
 	for pos,id := range article_ids{
 		wg.Add(1)
-		models.MultipleLoadArticle(id,pos,articleList,&wg)
+		go models.MultipleLoadArticle(id,pos,articleList,&wg)
 	}
 	wg.Wait()
 
@@ -89,11 +89,11 @@ func CategoryManage(context *gin.Context){
 	categoryList := make([]*models.Category,len(categroy_list))
 	for pos,id := range categroy_list{
 		wg.Add(1)
-		models.MultipleLoadCategory(id,pos,categoryList,&wg)
+		go models.MultipleLoadCategory(id,pos,categoryList,&wg)
 	}
 
 	wg.Wait()
-	fmt.Println(categoryList)
+
 	context.HTML(http.StatusOK,"category.html",gin.H{
 		"categoryList":categoryList,
 	})

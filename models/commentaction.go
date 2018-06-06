@@ -20,29 +20,31 @@ func CommentList(articleid int)[]int{
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 
 	if !exists{
-		sql := "select id,atime from b_comment where articleid=? order by atime desc"
+		sql := "select id,ordertime from b_comment where articleid=? order by atime asc"
 		db := conn.GetMysqlConn()
 		rows,err := db.Query(sql,articleid)
 		if err != nil{
 			log.Error("CommentList has error:%v",err)
 			return list
 		}
+		defer rows.Close()
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
-		var id,atime int
+		var id,ordertime,score float64
 		for rows.Next(){
-			err := rows.Scan(&id,&atime)
+			err := rows.Scan(&id,&ordertime)
 			if err != nil{
 				log.Error(fmt.Sprintf("rows.Scan has error:%v",err))
 				continue
 			}
-			rargs = append(rargs,atime,id)
+			score = ordertime * 1000000 + id
+			rargs = append(rargs,score,id)
 		}
 		if len(rargs) > 1{
 			rconn.Send("ZADD",rargs...)
 		}
 	}
-	list,err = redis.Ints(rconn.Do("ZREVRANGE",key,0,-1))
+	list,err = redis.Ints(rconn.Do("ZRANGE",key,0,-1))
 	if err != nil{
 		log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
 		return list
@@ -59,14 +61,13 @@ func ManageCommentCnt(articleid ...int)int{
 		arteid = articleid[0]
 	}
 
-	key := "commentcnt:" + strconv.Itoa(arteid)
+	key := "commentList:cnt:" + strconv.Itoa(arteid) + "|-1"
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
 
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 
 	if !exists{
-
 		sql := "select count(1) from b_comment"
 		if arteid > 0{
 			sql = "select count(1) from b_comment where articleid=?"
@@ -106,23 +107,41 @@ func ManageCommentList(args map[string]int)[]int{
 	if !ok{
 		arteid = 0
 	}
-	pagesize := args["pagesize"]
-	offset := args["offset"]
+	pagesize,ok := args["pagesize"]
+	if !ok{
+		pagesize = 10
+	}
+	offset,ok := args["offset"]
+	if !ok{
+		offset = 0
+	}
+	tp,ok := args["type"]
+	if !ok{
+		tp = -1
+	}
 
 	list := make([]int,0)
-	key := "commentList:" + strconv.Itoa(arteid)
+	key := "commentList:" + strconv.Itoa(arteid) + "|" + strconv.Itoa(tp)
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
-
+	fmt.Println(key)
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 
 	if !exists{
 		pargs := make([]interface{},0)
 		sql := "select id,atime from b_comment order by atime desc"
-		if arteid > 0{
-			sql = "select id,atime from b_comment where articleid=? order by atime desc"
-			pargs = append(pargs,arteid)
+		if tp != -1{
+			if arteid > 0{
+				sql = "select id,atime from b_comment where articleid=? and type=? order by atime desc"
+				pargs = append(pargs,arteid,tp)
+			}
+		}else{
+			if arteid > 0{
+				sql = "select id,atime from b_comment where articleid=? order by atime desc"
+				pargs = append(pargs,arteid)
+			}
 		}
+
 		db := conn.GetMysqlConn()
 		var err error
 		rows,err := db.Query(sql,pargs...)
@@ -131,6 +150,7 @@ func ManageCommentList(args map[string]int)[]int{
 			log.Error("ManageCommentList has error:%v",err)
 			return list
 		}
+		defer rows.Close()
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
 		var id,atime int
@@ -157,33 +177,41 @@ func ManageCommentList(args map[string]int)[]int{
 
 
 /**
-	添加一条回复
+	添加一条评论或回复
+	tp 0:评论 1:回复
+	cid :回复的评论id
  */
 
-func AddComment(aid int,name interface{},content string){
-	sql := "insert into b_comment(articleid,name,content,atime) values(?,?,?,?)"
+func AddComment(aid,tp,cid int,name interface{},content string){
+	sql := "insert into b_comment(articleid,type,cid,name,content,atime) values(?,?,?,?,?,?)"
 	db := conn.GetMysqlConn()
 
 	tx,err := db.Begin()
 	if err != nil{
-		log.Error("AddComment has error.aid:%d,name:%v,content:%s,error:%v",aid,name,content,err)
+		log.Error("AddComment has error. aid:%d,tp:%d,cid:%d,name:%v,content;%s,error:%v",aid,tp,cid,name,content,err)
 		return
 	}
-	stmt,err := tx.Prepare(sql)
-	if err != nil{
-		log.Error("AddComment has error. aid:%d,name:%v,content;%s,error:%v",aid,name,content,err)
-		return
-	}
-	stmt.Exec(aid,name,content,time.Now().Unix())
+	defer tx.Rollback()
 
-	sql = "update b_article set comment_count=comment_count+1 where id=?"
-	up_stmt,err := tx.Prepare(sql)
+	result,err := tx.Exec(sql,aid,tp,cid,name,content,time.Now().Unix())
 	if err != nil{
-		log.Error("AddComment has error. aid:%d,name:%v,content;%s,error:%v",aid,name,content,err)
-		tx.Rollback()
-		return
+		log.Error("AddComment has error. aid:%d,tp:%d,cid:%d,name:%v,content;%s,error:%v",aid,tp,cid,name,content,err)
 	}
-	up_stmt.Exec(aid)
+	commentId,_ := result.LastInsertId()
+	var ordertime float64
+	if tp == 0{
+		ordertime = float64(commentId)
+	}else{
+		ordertime = float64(cid) + 0.1
+	}
+	sql = "update b_comment set ordertime=?,cid=? where id=?"
+	tx.Exec(sql,ordertime,commentId,commentId)
+
+	if tp == 0{
+		sql = "update b_article set comment_count=comment_count+1 where id=?"
+		tx.Exec(sql,aid)
+	}
+
 
 	tx.Commit()
 
@@ -191,8 +219,12 @@ func AddComment(aid int,name interface{},content string){
 	defer rconn.Close()
 
 	keys := make([]interface{},0)
-	keys = append(keys,"commentList:" + strconv.Itoa(aid))
-	keys = append(keys,"commentList:0")
+	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|0")
+	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|1")
+	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|-1")
+	keys = append(keys,"commentList:0|0")
+	keys = append(keys,"commentList:0|1")
+	keys = append(keys,"commentList:0|-1")
 	keys = append(keys,"article:" + strconv.Itoa(aid))
 	rconn.Do("DEL",keys...)
 
@@ -206,14 +238,9 @@ func DelComment(aid,cid int)int{
 	db := conn.GetMysqlConn()
 	sql := "call delComment(?,?)"
 
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		log.Error("DelComment has error:%v",err)
-		return -2
-	}
-	defer stmt.Close()
+
 	var errcode int
-	row := stmt.QueryRow(aid,cid)
+	row := db.QueryRow(sql,aid,cid)
 	err = row.Scan(&errcode)
 	if err != nil{
 		return -2
@@ -224,8 +251,12 @@ func DelComment(aid,cid int)int{
 
 	keys := make([]interface{},0)
 	keys = append(keys,"comment:" + strconv.Itoa(cid))
-	keys = append(keys,"commentList:0")
-	keys = append(keys,"commentList:" + strconv.Itoa(aid))
+	keys = append(keys,"commentList:0|0")
+	keys = append(keys,"commentList:0|1")
+	keys = append(keys,"commentList:0|-1")
+	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|0")
+	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|1")
+	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|-1")
 	keys = append(keys,"article:" + strconv.Itoa(aid))
 
 	_,err = rconn.Do("DEL",keys...)

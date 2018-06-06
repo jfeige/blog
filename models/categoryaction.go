@@ -25,6 +25,7 @@ func CategoryList()[]int{
 			log.Error("db.Query has error:%v",err)
 			return list
 		}
+		defer rows.Close()
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
 		var id,index int

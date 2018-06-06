@@ -45,14 +45,10 @@ func (this *Article) Load(id int) error{
 		}
 
 	}
-	sql := "select id,title,content,userid,categoryid,read_count,comment_count,publish_time,publish_date,isshow from b_article where id=?"
+	sql := "select id,title,content,userid,categoryid,read_count,comment_count,publish_time,publish_date,isshow from b_article where id=? limit 1"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		return err
-	}
-	defer stmt.Close()
-	row := stmt.QueryRow(id)
+
+	row := db.QueryRow(sql,id)
 	err = row.Scan(&this.Id,&this.Title,&this.Content,&this.Userid,&this.Categoryid,&this.Read_count,&this.Comment_count,&this.Publish_time,&this.Publish_date,&this.Isshow)
 	if err != nil{
 		return err
@@ -70,9 +66,27 @@ func MultipleLoadArticle(id int,position int,article_list []*Article,wg *sync.Wa
 	err := article.Load(id)
 	if err == nil{
 		article_list[position] = article
+	}else{
+		article_list[position] = nil
 	}
 	return
 }
+
+/**
+	过滤空数据
+ */
+func FilterNilArticle(articleList []*Article)[]*Article{
+	//过滤空数据
+	for k,v := range articleList{
+		if v == nil && k  < len(articleList)-1{
+			articleList = append(articleList[:k],articleList[k+1:]...)
+		}else if k == len(articleList)-1 && v == nil{
+			articleList = articleList[:len(articleList)-1]
+		}
+	}
+	return articleList
+}
+
 /**
 	获取作者
  */
@@ -194,6 +208,18 @@ func (this *Article) FormatPublishTime(format string)string{
 	return time.Unix(this.Publish_time,0).Format(format)
 }
 
+
+
+/**
+	前台首页长度
+ */
+func (this *Article) FormatTitle()string{
+	title := []rune(this.Title)
+	if len(title) > 500{
+		return string(title[:500]) + " ..."
+	}
+	return this.Title
+}
 
 /**
 	前台摘要显示

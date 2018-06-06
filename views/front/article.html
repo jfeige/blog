@@ -26,17 +26,30 @@
         {{if gt .article.Comment_count 0}}
             <div class="article">
               <h2><span>{{.article.Comment_count}}</span> Responses</h2><div class="clr"></div>
-              {{range .commentList}}
-                <div class="comment">
-                  <a href="#"><img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" /></a>
-                  <p><a href="#">{{.Name}}</a> Says:<br />{{.FormatAtime "Jan 02th, 2006 at 15:04"}}</p>
-                  <p>{{.Content}}</p>
-                </div>
+              {{range $k, $v := .commentList}}
+                 {{if eq $v.Type 1}}
+                    <div id="comment_{{$v.Id}}" class="comment" style="padding: 5px 0 0 50px;">
+                      <span>
+                          <img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" />
+                          <p><a href="#">{{$v.Name}}</a> Says:<br />{{$v.FormatAtime "Jan 02th, 2006 at 15:04"}}</p>
+                          <p>{{$v.Content}}</p>
+                      </span>
+                    </div>
+                 {{else}}
+                     <div id="comment_{{$v.Id}}" class="comment">
+                         <span>
+                            <img src="/static/img/userpic.gif" width="40" height="40" alt="user" class="userpic" />
+                            <p><a href="#">{{$v.Name}}</a> Says:<br />{{$v.FormatAtime "Jan 02th, 2006 at 15:04"}}</p>
+                             <p>{{$v.Content}}</p>
+                          </span>
+                          <a  onclick="showHuifu('{{$v.Id}}');">回复</a>
+                     </div>
+                 {{end}}
               {{end}}
             </div>
         {{end}}
-        <div class="article">
-          <h2>添加新回复</h2><div class="clr"></div>
+        <div id="pinglun" class="article">
+          <h2>发表评论</h2><div class="clr"></div>
             <ol>
                 <li>
                     <label for="message">姓名<span style="color:red">*</span></label>
@@ -47,7 +60,7 @@
                   <textarea id="message" name="message" rows="8" cols="50"></textarea>
                 </li>
                 <li>
-                  <input type="image" name="imageField" id="imageField" src="/static/img/submit.gif" class="send" onclick="recommd({{.article.Id}});"/>
+                  <input type="image" name="imageField" id="imageField" src="/static/img/submit.gif" class="send" onclick="recommd('{{.article.Id}}',0,0);"/>
                   <div class="clr"></div>
                 </li>
             </ol>
@@ -75,8 +88,22 @@
 </script>
 
 <script type="text/javascript">
-
-    function recommd(aid){
+    function showHuifu(id){
+        $('#pinglun').hide();
+        if($('#huifu').length > 0) {
+            $('#huifu').remove();
+        }
+        var str = $("<div id='huifu'><h3>发表评论&nbsp;&nbsp;&nbsp;&nbsp;<a onclick='hideHuifu();'>取消回复</a></h3><div><ol><li><label for='message'>姓名<span style='color:red'>*</span></label><input type='text' id='name' name='name'/><input type='hidden' name='cid' id='cid' value='"+id+"'/></li><li><label for='message'>内容<span style='color:red'>*</span></label><textarea id='message' name='message' rows='8' cols='50'></textarea></li><li><input type='image' name='imageField' id='imageField' src=/static/img/submit.gif class='send' onclick='recommd({{.article.Id}},1,"+id+");'/><div class='clr'></div></li></ol></div></div>");
+        $('#comment_' + id).append(str);
+    }
+    function hideHuifu(){
+        if($('#huifu').length > 0) {
+            $('#huifu').remove();
+        }
+        $('#pinglun').show();
+    }
+    //type 0:评论; 1:回复
+    function recommd(aid,type,cid){
         var name = $('#name').val();
         var content = $('#message').val();
         if($.trim(name) == ""){
@@ -92,7 +119,9 @@
             data:{
                 name : name,
                 content : content,
-                aid : aid
+                aid : aid,
+                type : type,
+                cid : cid
             },
             type:'post',
             cache:false,

@@ -64,3 +64,25 @@ func initRedisPool() *redis.Pool {
 	}
 	return Pool
 }
+
+/**
+	模糊匹配，删除多个key
+ */
+func DelKeys(key string){
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	keys,err := redis.Values(rconn.Do("keys",key))
+
+	if err != nil{
+		log.Error("DelKeys has error!key:%s,error:%v",key,err)
+		return
+	}
+	if len(keys) > 0{
+		_,err = rconn.Do("DEL",keys...)
+		if err != nil{
+			log.Error("DelKeys has error!key:%s,error:%v",key,err)
+			return
+		}
+	}
+}

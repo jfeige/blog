@@ -3,7 +3,6 @@ package models
 import
 (
 	"github.com/garyburd/redigo/redis"
-	"fmt"
 )
 type Webset struct {
 	Id int `redis:"id"`
@@ -40,12 +39,8 @@ func (this *Webset) Load()error{
 	}
 	sql := "select id,sitename,sitedesc,siteurl,keywords,descri,name,phone,qq,email,place,github from b_webset order by id desc limit 1"
 	db := conn.GetMysqlConn()
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		return err
-	}
-	defer stmt.Close()
-	row := stmt.QueryRow()
+
+	row := db.QueryRow(sql)
 	err = row.Scan(&this.Id,&this.Sitename,&this.Sitedesc,&this.Siteurl,&this.Keywords,&this.Descri,&this.Name,&this.Phone,&this.Qq,&this.Email,&this.Place,&this.Github)
 	if err != nil{
 		return err
@@ -59,13 +54,7 @@ func (this *Webset) Load()error{
 func (this *Webset)UpdateWebSet() error{
 	db := conn.GetMysqlConn()
 	sql := "update b_webset set sitename=?,sitedesc=?,siteurl=?,keywords=?,descri=?,name=?,phone=?,qq=?,email=?,place=?,github=? where id=?"
-	stmt,err := db.Prepare(sql)
-	if err != nil{
-		return err
-	}
-	fmt.Println(this)
-	defer stmt.Close()
-	_,err = stmt.Exec(this.Sitename,this.Sitedesc,this.Siteurl,this.Keywords,this.Descri,this.Name,this.Phone,this.Qq,this.Email,this.Place,this.Github,this.Id)
+	_,err = db.Exec(sql,this.Sitename,this.Sitedesc,this.Siteurl,this.Keywords,this.Descri,this.Name,this.Phone,this.Qq,this.Email,this.Place,this.Github,this.Id)
 	if err != nil{
 		return err
 	}
