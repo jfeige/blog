@@ -2,28 +2,80 @@ package controllers
 
 import (
 	"gopkg.in/gin-gonic/gin.v1"
-
-	"fmt"
 	"net/http"
 	"blog/models"
+	"strconv"
+	"sync"
+	"math"
 )
 
 
 func TagIndex(context *gin.Context){
+	tagid := context.Param("tagid")
 
-	tmpTagid := context.Param("tagid")
-	if tmpTagid != ""{
-		tmpTagid = tmpTagid[1:]
+	t_id,err := strconv.Atoi(tagid)
+	if err != nil || t_id == 0{
+		context.Redirect(http.StatusFound,"/")
 	}
 
-
-	if tmpTagid == ""{
-		gh := make(map[string]interface{})
-		gh["errinfo"] = ""
-		context.HTML(http.StatusOK,"index.html",gh)
-	}else{
-		fmt.Println("tagid is null",tmpTagid)
+	tmpPage := context.Param("page")
+	if tmpPage != ""{
+		tmpPage = tmpPage[1:]
 	}
+
+	page,err := strconv.Atoi(tmpPage)
+	if err != nil || page < 1{
+		page = 1
+	}
+
+	allCnt := models.ArticleByTagCnt(t_id)			//该标签下文章总数量
+	pagesize := models.BlogPageSize
+	allPage := math.Ceil(float64(allCnt)/float64(pagesize))
+	if float64(page) > allPage{
+		page = 1
+	}
+
+	offset := (page - 1) * pagesize
+
+	args := make(map[string]int)
+	args["pagesize"] = pagesize
+	args["offset"] = offset
+	args["tid"] = t_id
+
+	//根据标签id查询所有符合条件的文章
+	var wg sync.WaitGroup
+
+	article_ids := models.ArticleListByTag(args)
+	articleList := make([]*models.Article,len(article_ids))
+	for pos,id := range article_ids{
+		wg.Add(1)
+		go models.MultipleLoadArticle(id,pos,articleList,&wg)
+	}
+	wg.Wait()
+	if len(articleList) == 0{
+		errinfo := make(map[string]interface{})
+		errinfo["errcode"] = ""
+		errinfo["errinfo"] = "暂无文章,换个标签试试吧"
+		ToError(context,errinfo)
+		context.Abort()
+		return
+	}
+	pages := make([]int,0)
+	for i := 1; i <= int(allPage);i++{
+		pages = append(pages,i)
+	}
+
+	//读取中间件传来的参数
+	tmp_gh,_ := context.Get("gh")
+	gh := tmp_gh.(map[string]interface{})
+	gh["articleList"] = articleList
+	gh["allPage"] = allPage
+	gh["pages"] = pages
+	gh["page"] = page
+
+	gh["url"] = "/tag/" + tagid
+
+	context.HTML(http.StatusOK,"front/index.html",gh)
 
 
 }
