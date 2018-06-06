@@ -52,7 +52,7 @@ func initRouter()*gin.Engine{
 	//类别页面
 	router.GET("/category/:cateid/*page",FrontWare(), controllers.CategoryFront)
 	//标签页面
-	router.GET("/tag/*tagid",FrontWare(), controllers.TagIndex)
+	router.GET("/tag/:tagid/*page",FrontWare(), controllers.TagIndex)
 	//添加一条回复
 	router.POST("/comment/addComment",SessionWare(),controllers.AddComment)
 	//留言板
@@ -112,7 +112,7 @@ func initRouter()*gin.Engine{
 	})
 
 	//404处理
-	router.NoRoute(controllers.ToError)
+	router.NoRoute(controllers.NoRouter)
 
 
 	return router
@@ -261,7 +261,6 @@ func FrontWare() gin.HandlerFunc {
 		if len(articleList) >= 6{
 			recentList = articleList[:6]
 		}
-		fmt.Println(recentList)
 
 		gh := make(map[string]interface{})
 		gh["webSet"] = webSet
