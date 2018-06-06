@@ -11,16 +11,10 @@ import (
 /**
 	没有找到路由  /manage/index2
  */
-func ToError(context *gin.Context){
+func ToError(context *gin.Context,gh map[string]interface{}){
 
 	requestUri := strings.ToUpper(context.Request.RequestURI)
 	if strings.HasPrefix(requestUri,"/MANAGE"){
-		//后台
-		gh := make(map[string]interface{})
-
-		gh["errcode"] = "404"
-		gh["errinfo"] = "页面找不到了!"
-
 		context.HTML(http.StatusOK,"manage/error.html",gh)
 	}else{
 		var wg sync.WaitGroup
@@ -45,15 +39,20 @@ func ToError(context *gin.Context){
 		wg.Wait()
 
 
-		gh := make(map[string]interface{})
 		gh["webSet"] = webSet
 		gh["articleList"] = articleList
 
-		gh["errcode"] = "404"
-		gh["errinfo"] = "页面找不到了!"
-
 		context.HTML(http.StatusOK,"error.html",gh)
 	}
+}
+
+
+func NoRouter(context *gin.Context){
+	gh := make(map[string]interface{})
+	gh["errcode"] = "404"
+	gh["errinfo"] = "页面找不到了!"
+
+	context.HTML(http.StatusOK,"error.html",gh)
 }
 
 /**

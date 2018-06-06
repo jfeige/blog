@@ -3,14 +3,14 @@ package models
 import (
 	"github.com/garyburd/redigo/redis"
 	log "github.com/alecthomas/log4go"
-	"fmt"
+	"strconv"
 )
 
 func TagList()[]int{
 	list := make([]int,0)
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
-	key := "taglist"
+	key := "tagList"
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
 	if !exists{
 		db := conn.GetMysqlConn()
@@ -38,7 +38,7 @@ func TagList()[]int{
 
 	list,err = redis.Ints(rconn.Do("ZRANGE",key,0,-1))
 	if err != nil{
-		log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
+		log.Error("redis.Ints has error:%v",err)
 		return list
 	}
 
@@ -141,4 +141,98 @@ func DelTag(id string)int {
 
 	return 0
 
+}
+
+
+
+/**
+	指定标签下文章总数
+ */
+func ArticleByTagCnt(tid int)int{
+	var cnt int
+
+	rconn := conn.GetRedisConn()
+	defer rconn.Close()
+	key := "tagList:cnt:" + strconv.Itoa(tid)
+	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
+	if !exists{
+		db := conn.GetMysqlConn()
+		sql := "select count(1) from b_actmapptags where t_id=? "
+
+		row := db.QueryRow(sql,tid)
+		err = row.Scan(&cnt)
+		if err != nil{
+			log.Error("row.Scan has error:%v",err)
+			return	0
+		}
+		err = rconn.Send("set",key,cnt)
+		if err != nil{
+			log.Error("rconn.Send has error:%v",err)
+			return	cnt
+		}
+	}
+
+	cnt,err := redis.Int(rconn.Do("get",key))
+	if err != nil{
+		log.Error("redis.Int has error:%v",err)
+		return 0
+	}
+	return cnt
+
+}
+
+
+/**
+	文章列表
+ */
+func ArticleListByTag(args map[string]int)[]int{
+	list := make([]int,0)
+	pagesize,ok := args["pagesize"]
+	if !ok{
+		pagesize = 10
+	}
+	offset,ok := args["offset"]
+	if !ok{
+		offset = 0
+	}
+	tid := args["tid"]		//标签id
+
+	key := "tagList:"  + strconv.Itoa(tid)
+	rconn := conn.GetRedisConn()
+	defer rconn.Close()
+	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
+	if !exists{
+		db := conn.GetMysqlConn()
+		sql := "SELECT a.id,a.publish_time FROM lifei.b_actmapptags m,lifei.b_article a where m.t_id=? and m.a_id=a.id order by a.id desc;"
+
+		rows,err := db.Query(sql,tid)
+		if err != nil{
+			log.Error("stmt.Query has error:%v",err)
+			return	list
+		}
+		defer rows.Close()
+		rargs := make([]interface{},0)
+		rargs = append(rargs,key)
+		var id,publish_time int
+		for rows.Next(){
+			err = rows.Scan(&id,&publish_time)
+			if err != nil{
+				log.Error("ArticleListByTagCnt has error:%v",err)
+				continue
+			}
+			rargs = append(rargs,publish_time,id)
+		}
+		if len(rargs) > 1{
+			rconn.Send("ZADD",rargs...)
+		}
+	}
+
+	limit := offset + pagesize - 1
+	var params = []interface{}{key, offset, limit}
+	list,err = redis.Ints(rconn.Do("ZREVRANGE",params...))
+	if err != nil{
+		log.Error("redis.Ints has error:%v",err)
+		return list
+	}
+	return list
 }

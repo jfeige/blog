@@ -218,13 +218,10 @@ func AddComment(aid,tp,cid int,name interface{},content string){
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
+	key := "commentList:*"
+	DelKeys(key)
+
 	keys := make([]interface{},0)
-	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|0")
-	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|1")
-	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|-1")
-	keys = append(keys,"commentList:0|0")
-	keys = append(keys,"commentList:0|1")
-	keys = append(keys,"commentList:0|-1")
 	keys = append(keys,"article:" + strconv.Itoa(aid))
 	rconn.Do("DEL",keys...)
 
@@ -249,14 +246,11 @@ func DelComment(aid,cid int)int{
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
+	key := "commentList:*"
+	DelKeys(key)
+
 	keys := make([]interface{},0)
 	keys = append(keys,"comment:" + strconv.Itoa(cid))
-	keys = append(keys,"commentList:0|0")
-	keys = append(keys,"commentList:0|1")
-	keys = append(keys,"commentList:0|-1")
-	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|0")
-	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|1")
-	keys = append(keys,"commentList:" + strconv.Itoa(aid) + "|-1")
 	keys = append(keys,"article:" + strconv.Itoa(aid))
 
 	_,err = rconn.Do("DEL",keys...)

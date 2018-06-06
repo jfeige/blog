@@ -87,7 +87,6 @@ func ArticleList(args map[string]int)[]int{
 	}
 
 	key := "articleList:"  + strconv.Itoa(cateid) + "|" + strconv.Itoa(order)
-	fmt.Println(key)
 	rconn := conn.GetRedisConn()
 	defer rconn.Close()
 	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
@@ -237,6 +236,8 @@ func AddArticle(cateid int,title,content,tagids string) int{
 
 	key := "articleList:*"
 	DelKeys(key)
+	key = "tagList:*"
+	DelKeys(key)
 
 	keys := make([]interface{},0)
 	keys = append(keys,"category:" + strconv.Itoa(cateid))
@@ -295,6 +296,8 @@ func DelArticle(aid,cateid int)int{
 	key := "articleList:*"
 	DelKeys(key)
 	key = "commentList:*"
+	DelKeys(key)
+	key = "tagList:*"
 	DelKeys(key)
 
 	keys := make([]interface{},0)
