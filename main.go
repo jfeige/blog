@@ -103,7 +103,6 @@ func initRouter()*gin.Engine{
 	manageRouter.GET("/viewComment/:cid",controllers.CommentInfo)
 	//删除评论
 	manageRouter.POST("/delComment",controllers.DelComment)
-
 	//退出登录
 	manageRouter.GET("/logout",controllers.Logout)
 
@@ -197,7 +196,7 @@ func FrontWare() gin.HandlerFunc {
 		categoryList := make([]*models.Category,len(categroy_list))
 		for pos,id := range categroy_list{
 			wg.Add(1)
-			models.MultipleLoadCategory(id,pos,categoryList,&wg)
+			go models.MultipleLoadCategory(id,pos,categoryList,&wg)
 		}
 
 		//友情链接
@@ -205,36 +204,64 @@ func FrontWare() gin.HandlerFunc {
 		flinkList := make([]*models.FriendLink,len(flink_list))
 		for pos,id := range flink_list{
 			wg.Add(1)
-			models.MultipleLoadFLink(id,pos,flinkList,&wg)
+			go models.MultipleLoadFLink(id,pos,flinkList,&wg)
 		}
+
 		//标签
 		tag_list := models.TagList()
 		tagList := make([]*models.Tag,len(tag_list))
 		for pos,id := range tag_list{
 			wg.Add(1)
-			models.MultipleLoadTag(id,pos,tagList,&wg)
+			go models.MultipleLoadTag(id,pos,tagList,&wg)
+		}
+
+		//最新评论,现实最近的6条评论(纯评论)
+		args := make(map[string]int)
+		args["pagesize"] = 6
+		args["type"] = 0		//0:评论;1:回复;-1:全部
+
+		comment_list := models.ManageCommentList(args)
+		commentList := make([]*models.Comment,len(comment_list))
+		for pos,id := range comment_list{
+			wg.Add(1)
+			go models.MultipleLoadComment(id,pos,commentList,&wg)
+		}
+		//热门文章(按照阅读量降序)
+		args = make(map[string]int)
+		args["order"] = 1
+		args["pagesize"] = 6
+		hotArticle_list := models.ArticleList(args)
+		hotArticleList := make([]*models.Article,len(hotArticle_list))
+		for pos,id := range hotArticle_list{
+			wg.Add(1)
+			go models.MultipleLoadArticle(id,pos,hotArticleList,&wg)
 		}
 
 		//文章列表
-		args := make(map[string]int)
-		args["page"] = 1
-		args["pagesize"] = 10
-		args["offset"] = 0
+		args = make(map[string]int)
 		article_ids := models.ArticleList(args)
 		articleList := make([]*models.Article,len(article_ids))
 		for pos,id := range article_ids{
 			wg.Add(1)
-			models.MultipleLoadArticle(id,pos,articleList,&wg)
+			go models.MultipleLoadArticle(id,pos,articleList,&wg)
 		}
 		wg.Wait()
+
+		//过滤空数据
+		articleList = models.FilterNilArticle(articleList)
+		hotArticleList = models.FilterNilArticle(hotArticleList)
+		categoryList = models.FilterNilCategory(categoryList)
+		flinkList = models.FilterNilFriendLink(flinkList)
+		tagList = models.FilterNilTag(tagList)
+
+		commentList = models.FilterNilComment(commentList)
 
 		//近期文章
 		recentList := articleList
 		if len(articleList) >= 6{
 			recentList = articleList[:6]
 		}
-
-		wg.Wait()
+		fmt.Println(recentList)
 
 		gh := make(map[string]interface{})
 		gh["webSet"] = webSet
@@ -242,6 +269,8 @@ func FrontWare() gin.HandlerFunc {
 		gh["flinkList"] = flinkList
 		gh["tagList"] = tagList
 		gh["recentList"] = recentList
+		gh["commentList"] = commentList
+		gh["hotArticleList"] = hotArticleList
 
 		c.Set("gh", gh)
 		c.Next()
