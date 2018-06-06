@@ -33,7 +33,6 @@ func ProcessReadData(){
 	for{
 		select{
 		case a_id :=<- models.ReadChan:
-			fmt.Println("chan收到一条浏览请求:",a_id)
 			//执行入库更新
 			go addRead(a_id)
 		case <- time.After(10*time.Second):
@@ -59,7 +58,6 @@ func updateReadCnt(){
 	defer lock.Unlock()
 	for a_id,cnt := range readData{
 		//执行入库
-		fmt.Println("-----",a_id,cnt)
 		go models.UpdateReadCnt(a_id,cnt)
 	}
 

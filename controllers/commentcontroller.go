@@ -126,7 +126,7 @@ func CommentList(context *gin.Context){
 	commentList := make([]*models.Comment,len(comment_list))
 	for pos,id := range comment_list{
 		wg.Add(1)
-		models.MultipleLoadComment(id,pos,commentList,&wg)
+		go models.MultipleLoadComment(id,pos,commentList,&wg)
 	}
 	wg.Wait()
 	pages := make([]int,0)
