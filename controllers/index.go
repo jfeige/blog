@@ -105,9 +105,15 @@ func Article(context *gin.Context){
 
 	tmp_gh,_ := context.Get("gh")
 	gh := tmp_gh.(map[string]interface{})
-	gh["commentList"] = commentList
+	gh["commList"] = commentList
 	gh["cns"] = len(commentList)
 	gh["article"] = article
+
+	tmpSession,ok := context.Get("session")
+	if ok{
+		session := tmpSession.(*models.Session)
+		gh["session"] = session
+	}
 
 	context.HTML(http.StatusOK,"article.html",gh)
 }
