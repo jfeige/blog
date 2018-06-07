@@ -42,28 +42,16 @@
             {{end}}
             <tr>
                 <td colspan="8">
-                    <div class="pagelist">
-                        {{if gt .page 1}}
-                            <a href="{{$.url}}?page={{.prevPage}}">上一页</a>
-                        {{end}}
-                        {{range $p, $v := .pages}}
-                            {{if eq $v $.page}}
-                                <span class="current">{{$v}}</span>
-                            {{else}}
-                                <a href="{{$.url}}?page={{$v}}">{{$v}}</a>
-                            {{end}}
-                        {{end}}
-                        {{if lt .page .allPage}}
-                            <a href="{{$.url}}?page={{.nextPage}}">下一页</a>
-                            <a href="{{$.url}}?page={{.allPage}}">尾页</a>
-                        {{end}}
-                    </div></td>
+                    <div class="pagelist" id="pagelist"></div>
+                </td>
             </tr>
         </table>
     </div>
 </body>
 <script language="JavaScript">
     var cateid = '{{.cateid}}'
+    var pageStr = $('{{.pager.OutPut}}');
+    $('#pagelist').append(pageStr);
     function delArticle(aid,cid){
         if(confirm("您确定要提删除该文章吗?")){
             var aj = $.ajax( {

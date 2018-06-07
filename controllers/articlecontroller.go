@@ -57,19 +57,19 @@ func ArticleInfo(context *gin.Context){
 func ArticleList(context *gin.Context){
 	var wg sync.WaitGroup
 
-	id := context.Param("cateid")
-	if id != ""{
-		id = id[1:]
+	c_id := context.Param("cateid")
+	if c_id != ""{
+		c_id = c_id[1:]
 	}
-	tmpPage,ok := context.GetQuery("page")
-	if !ok{
+	tmpPage := context.Param("page")
+	if tmpPage == ""{
 		tmpPage = "1"
 	}
-	page,err := strconv.Atoi(tmpPage)
-	if err != nil || page < 1{
-		page = 1
+	curPage,err := strconv.Atoi(tmpPage)
+	if err != nil || curPage < 1{
+		curPage = 1
 	}
-	cateid,err := strconv.Atoi(id)
+	cateid,err := strconv.Atoi(c_id)
 	if err != nil || cateid <= 0{
 		cateid = 0
 	}
@@ -77,11 +77,11 @@ func ArticleList(context *gin.Context){
 	allCnt := models.ArticleCnt(cateid)			//文章总数量
 	pagesize := 20
 	allPage := math.Ceil(float64(allCnt)/float64(pagesize))
-	if float64(page) > allPage{
-		page = 1
+	if float64(curPage) > allPage{
+		curPage = 1
 	}
 
-	offset := (page - 1) * pagesize
+	offset := (curPage - 1) * pagesize
 
 	args := make(map[string]int)
 	args["cateid"] = cateid
@@ -95,22 +95,14 @@ func ArticleList(context *gin.Context){
 		go models.MultipleLoadArticle(id,pos,articleList,&wg)
 	}
 	wg.Wait()
-	//暂不考虑分页显示
 
-	pages := make([]int,0)
-	for i := 1; i <= int(allPage);i++{
-		pages = append(pages,i)
-	}
+	var perNum = 7
+	pager := models.NewPage(int(allPage),curPage,perNum,"/manage/articleList/" + strconv.Itoa(cateid))
 
 	context.HTML(http.StatusOK,"manage/articlelist.html",gin.H{
 		"articleList":articleList,
-		"allPage" : int(allPage),
-		"pages": pages,
-		"page": page,
-		"prevPage":page-1,
-		"nextPage":page+1,
-		"cateid":id,
-		"url": "/manage/article/"+id,
+		"pager": pager,
+		"cateid":cateid,
 	})
 }
 

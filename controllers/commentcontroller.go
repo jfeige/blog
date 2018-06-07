@@ -123,24 +123,23 @@ func CommentList(context *gin.Context){
 
 	arteid,_ := strconv.Atoi(tmpArteId)
 	//如果没有指定文章id，则读取所有评论，降序排列
-
-	tmpPage,ok := context.GetQuery("page")
-	if !ok{
+	tmpPage := context.Param("page")
+	if tmpPage == ""{
 		tmpPage = "1"
 	}
-	page,err := strconv.Atoi(tmpPage)
-	if err != nil || page < 1{
-		page = 1
+	curPage,err := strconv.Atoi(tmpPage)
+	if err != nil || curPage < 1{
+		curPage = 1
 	}
 
 	allCnt := models.ManageCommentCnt(arteid)			//评论总数量
 	pagesize := 20
 	allPage := math.Ceil(float64(allCnt)/float64(pagesize))
-	if float64(page) > allPage{
-		page = 1
+	if float64(curPage) > allPage{
+		curPage = 1
 	}
 
-	offset := (page - 1) * pagesize
+	offset := (curPage - 1) * pagesize
 
 	args := make(map[string]int)
 	args["arteid"] = arteid
@@ -160,17 +159,13 @@ func CommentList(context *gin.Context){
 		pages = append(pages,i)
 	}
 
+	var perNum = 7
+	pager := models.NewPage(int(allPage),curPage,perNum,"/manage/commentList/" + strconv.Itoa(arteid))
 
 	context.HTML(http.StatusOK,"commentlist.html",gin.H{
 		"commetList":commentList,
-		"allPage" : int(allPage),
-		"pages": pages,
-		"page": page,
-		"prevPage":page-1,
-		"nextPage":page+1,
+		"pager": pager,
 		"aid":arteid,
-		"url": "/manage/comment/"+tmpArteId,
-
 	})
 
 }

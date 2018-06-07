@@ -91,9 +91,9 @@ func initRouter()*gin.Engine{
 	//提交修改类别
 	manageRouter.POST("/upCatetory",controllers.UpCatetory)
 	//查看文章列表
-	manageRouter.GET("/articleList/*cateid",controllers.ArticleList)
+	manageRouter.GET("/articleList/:cateid/*page",controllers.ArticleList)
 	//评论列表
-	manageRouter.GET("/commentList/*arteid",controllers.CommentList)
+	manageRouter.GET("/commentList/:arteid/*page",controllers.CommentList)
 	//文章详情
 	manageRouter.GET("/articleinfo/:arteid",controllers.ArticleInfo)
 	//文章修改
@@ -106,6 +106,8 @@ func initRouter()*gin.Engine{
 	manageRouter.GET("/viewComment/:cid",controllers.CommentInfo)
 	//删除评论
 	manageRouter.POST("/delComment",controllers.DelComment)
+	//留言管理
+	manageRouter.GET("/msgList/*page",controllers.MsgList)
 	//退出登录
 	manageRouter.GET("/logout",controllers.Logout)
 

@@ -9,7 +9,9 @@ import (
 	"math"
 )
 
-
+/**
+	留言板
+ */
 func MessageBorad(context *gin.Context){
 	var wg sync.WaitGroup
 	//文章列表
@@ -32,16 +34,14 @@ func MessageBorad(context *gin.Context){
 	offset := (page - 1) * pagesize
 
 	args := make(map[string]int)
-	args["isshow"] = -1						//博客的显示控制 -1:全部;1:显示;0:隐藏
 	args["pagesize"] = pagesize
 	args["offset"] = offset
-	//order 0:publish_time;1:read_count阅读量
 
 	msg_ids := models.MsgList(args)
 	msgList := make([]*models.Message,len(msg_ids))
 	for pos,id := range msg_ids{
 		wg.Add(1)
-		models.MultipleLoadMessage(id,pos,msgList,&wg)
+		go models.MultipleLoadMessage(id,pos,msgList,&wg)
 	}
 	wg.Wait()
 
@@ -110,6 +110,59 @@ func AddMsg(context *gin.Context){
 	return
 }
 
+
+
+/**
+	留言管理(和前台代码基本一致，为了清晰，所以分开)
+ */
+func MsgList(context *gin.Context){
+	var wg sync.WaitGroup
+	//文章列表
+	tmpPage := context.Param("page")
+	if tmpPage != ""{
+		tmpPage = tmpPage[1:]
+	}
+
+	curPage,err := strconv.Atoi(tmpPage)
+	if err != nil || curPage < 1{
+		curPage = 1
+	}
+
+	allCnt := models.MsgCnt()
+	pagesize := 10
+	allPage := math.Ceil(float64(allCnt)/float64(pagesize))
+	if float64(curPage) > allPage{
+		curPage = 1
+	}
+	offset := (curPage - 1) * pagesize
+
+	args := make(map[string]int)
+	args["pagesize"] = pagesize
+	args["offset"] = offset
+	args["order"] = 1			//0:升序;1:降序
+
+	msg_ids := models.MsgList(args)
+	msgList := make([]*models.Message,len(msg_ids))
+	for pos,id := range msg_ids{
+		wg.Add(1)
+		go models.MultipleLoadMessage(id,pos,msgList,&wg)
+	}
+	wg.Wait()
+
+	//过滤空数据
+	msgList = models.FilterNilMessage(msgList)
+
+	var perNum = 7
+	pager := models.NewPage(int(allPage),curPage,perNum,"/manage/msgList")
+
+	//读取中间件传来的参数
+	gh := make(map[string]interface{})
+	gh["msgList"] = msgList
+	gh["pager"] = pager
+
+	context.HTML(http.StatusOK,"msglist.html",gh)
+
+}
 
 /**
 	删除一个留言

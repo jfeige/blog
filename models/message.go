@@ -62,7 +62,9 @@ func MultipleLoadMessage(id int,position int,msg_list []*Message,wg *sync.WaitGr
 	return
 }
 
-
+/**
+	过滤空数据
+ */
 func FilterNilMessage(msgList []*Message)[]*Message{
 	//过滤空数据
 	for k,v := range msgList{
@@ -81,4 +83,16 @@ func FilterNilMessage(msgList []*Message)[]*Message{
 func (this *Message) FormatPublishTime(format string)string{
 
 	return time.Unix(this.Atime,0).Format(format)
+}
+
+
+/**
+	前台摘要显示
+ */
+func (this *Message) FormatContent()string{
+	content := []rune(this.Content)
+	if len(content) > 25{
+		return string(content[:25]) + " ..."
+	}
+	return this.Content
 }
