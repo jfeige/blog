@@ -46,19 +46,22 @@ func initRouter()*gin.Engine{
 	//前台页面-----------------------------------------------------------
 	//首页
 	router.GET("/",FrontWare(),SessionWare(),controllers.Index)
-	router.GET("/index/*page",SessionWare(),FrontWare(),controllers.Index)
+	router.GET("/index/*page",FrontWare(),SessionWare(),controllers.Index)
 	//文章详情页面
-	router.GET("/article/:arteid",FrontWare(), controllers.Article)
+	router.GET("/article/:arteid",FrontWare(),SessionWare(), controllers.Article)
 	//类别页面
-	router.GET("/category/:cateid/*page",FrontWare(), controllers.CategoryFront)
+	router.GET("/category/:cateid/*page",FrontWare(),SessionWare(), controllers.CategoryFront)
 	//标签页面
-	router.GET("/tag/:tagid/*page",FrontWare(), controllers.TagIndex)
+	router.GET("/tag/:tagid/*page",FrontWare(),SessionWare(), controllers.TagIndex)
 	//添加一条回复
-	router.POST("/comment/addComment",SessionWare(),controllers.AddComment)
+	router.POST("/addComment",SessionWare(),controllers.AddComment)
 	//留言板
+	router.GET("/msg/*page",FrontWare(),SessionWare(),controllers.MessageBorad)
+	//提交留言
+	router.POST("/addMsg",SessionWare(),controllers.AddMsg)
 
 	//跳转到登录页面
-	router.GET("/login",controllers.Login)
+	router.GET("/login",SessionWare(),controllers.Login)
 	//登录
 	router.POST("/mlogin",SessionWare(),controllers.MLogin)
 
@@ -98,7 +101,7 @@ func initRouter()*gin.Engine{
 	//添加文章
 	manageRouter.Any("/addArticle",controllers.AddArticle)
 	//删除文章
-	manageRouter.GET("/delArticle",controllers.DelArticle)
+	manageRouter.POST("/delArticle",controllers.DelArticle)
 	//查看评论详情
 	manageRouter.GET("/viewComment/:cid",controllers.CommentInfo)
 	//删除评论
@@ -111,7 +114,7 @@ func initRouter()*gin.Engine{
 		context.HTML(http.StatusOK,"test.html",nil)
 	})
 
-	//404处理
+	//404处理(这里还有问题，前台和后台的区分问题)
 	router.NoRoute(controllers.NoRouter)
 
 
@@ -143,7 +146,6 @@ func SessionWare()gin.HandlerFunc{
 			session.Expire()
 		}
 		http.SetCookie(c.Writer, cookie)
-
 		c.Set("session", session)
 		c.Next()
 	}
@@ -186,7 +188,6 @@ func NoSessionWare()gin.HandlerFunc{
 func FrontWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var wg sync.WaitGroup
-
 		//网站设置&&个人档案
 		webSet := new(models.Webset)
 		webSet.Load()
@@ -261,6 +262,8 @@ func FrontWare() gin.HandlerFunc {
 		if len(articleList) >= 6{
 			recentList = articleList[:6]
 		}
+
+		fmt.Println("-----",commentList)
 
 		gh := make(map[string]interface{})
 		gh["webSet"] = webSet
