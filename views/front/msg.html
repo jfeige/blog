@@ -1,0 +1,108 @@
+{{template "header" .}}
+<script type="text/javascript" src="/static/js/jquery.js"></script>
+<body>
+<div class="main">
+{{template "menu" .}}
+  <div class="clr"></div>
+  <div class="content">
+    <div class="content_resize">
+      <div class="mainbar">
+            {{if gt .allCnt 0}}
+                {{range .msgList}}
+                    <div class="article">
+                        <p><a href="#"><strong>({{.User}})</strong></a>  <span>&nbsp;&bull;&nbsp;</span>  {{.FormatPublishTime "Jan 02, 2006 15:04:05"}}  <span>&nbsp;&bull;&nbsp;</span>  </p>
+                        <div id="content" style="width:95%;">{{.Content}}</div>
+                    </div>
+                {{end}}
+                    <div class="article" style="padding:5px 20px 2px 20px; background:none; border:0;">
+                        <p>Page {{.page}} of {{.allPage}}
+                            <span class="butons">
+                            {{range $p, $v := .pages}}
+                                <a href="{{$.url}}/{{$v}}" {{if eq $.page $v}}class="active"{{end}}>{{$v}}</a>
+                            {{end}}
+                            </span>
+                        </p>
+                    </div>
+            {{else}}
+                <h1>o(╥﹏╥)o</h1>
+                <br/>
+                <div class="clr"></div>
+                <div class="clr"></div>
+                <h3>还没有留言，快去抢占沙发吧！</h3>
+                <br/>
+                <p/>
+                <p/>
+                <p></p>
+            {{end}}
+        <div id="pinglun" class="article">
+          <h2>写留言</h2><div class="clr"></div>
+            <ol>
+                {{if .session.Has "uid"}}
+                {{else}}
+                    <li>
+                        <label for="message">姓名<span style="color:red">*</span></label>
+                        <input type="text" id="name" name="name"/>
+                        <input type="hidden" id="page" name="page" value="{{.page}}"/>
+                    </li>
+                {{end}}
+                <li>
+                  <label for="message">内容<span style="color:red">*</span></label>
+                  <textarea id="message" name="message" rows="8" cols="50"></textarea>
+                </li>
+                <li>
+                  <input type="image" name="imageField" id="imageField" src="/static/img/submit.gif" class="send" onclick="addMsg();"/>
+                  <div class="clr"></div>
+                </li>
+            </ol>
+        </div>
+      </div>
+      {{template "right" .}}
+      <div class="clr"></div>
+    </div>
+  </div>
+
+</div>
+<script language="JavaScript">
+    function addMsg() {
+        var name = $('#name').val();
+        var content = $('#message').val();
+
+        if($.trim(name) == ""){
+            alert("请输入你的姓名");
+            $('#name').focus();
+            return
+        }
+        if($.trim(content) == ""){
+            alert("请输入留言内容");
+            $('#message').focus();
+            return
+        }
+
+        if(confirm('确定要提交留言吗?')){
+            var aj = $.ajax( {
+                url:'/addMsg',// 跳转到 action
+                data:{
+                    name : name,
+                    content : content
+                },
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("留言成功")
+                    }else{
+                        alert(data.errinfo)
+                    }
+                    window.location.href="/msg/" + $('#page').val()
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/msg/" + $('#page').val()
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>
