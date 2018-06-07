@@ -50,19 +50,18 @@ func (this *Session) SetSession(key string,value interface{}){
 	rconn.Do("HMSET",this.sessid,key,value)
 }
 
+
 /**
 
  */
 func (this *Session) GetSession(key string)interface{}{
 	rconn := conn.pool.Get()
 	defer rconn.Close()
-
 	values,err := redis.StringMap(rconn.Do("HGETALL",this.sessid))
 	if err != nil{
 		log.Error("redis.StringMap has error:%v",err)
 		return nil
 	}
-
 	return values[key]
 }
 
@@ -72,14 +71,12 @@ func (this *Session) GetSession(key string)interface{}{
 func (this *Session) Has(key string)bool{
 	rconn := conn.pool.Get()
 	defer rconn.Close()
-
 	values,err := redis.StringMap(rconn.Do("HGETALL",this.sessid))
 	if err != nil{
 		log.Error("redis.StringMap has error:%v",err)
 		return false
 	}
 	_,ok := values[key]
-
 	return ok
 }
 

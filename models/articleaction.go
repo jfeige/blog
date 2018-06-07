@@ -4,7 +4,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"strconv"
 	log "github.com/alecthomas/log4go"
-	"fmt"
 	"time"
 	"strings"
 )
@@ -33,19 +32,19 @@ func ArticleCnt(cateid ...int)int{
 		row := db.QueryRow(sql,pargs...)
 		err = row.Scan(&cnt)
 		if err != nil{
-			log.Error(fmt.Sprintf("row.Scan has error:",err))
+			log.Error("ArticleCnt has error:%v",err)
 			return	0
 		}
 		err = rconn.Send("set",key,cnt)
 		if err != nil{
-			log.Error(fmt.Sprintf("rconn.Send has error:",err))
+			log.Error("ArticleCnt has error:%v",err)
 			return	cnt
 		}
 	}
 
 	cnt,err := redis.Int(rconn.Do("get",key))
 	if err != nil{
-		log.Error(fmt.Sprintf("redis.Int has error:%v",err))
+		log.Error("ArticleCnt has error:%v",err)
 		return 0
 	}
 	return cnt
@@ -101,7 +100,7 @@ func ArticleList(args map[string]int)[]int{
 
 		rows,err := db.Query(sql,pargs...)
 		if err != nil{
-			log.Error(fmt.Sprintf("stmt.Query has error:",err))
+			log.Error("ArticleList has error:",err)
 			return	list
 		}
 		defer rows.Close()
@@ -125,8 +124,7 @@ func ArticleList(args map[string]int)[]int{
 	var params = []interface{}{key, offset, limit}
 	list,err = redis.Ints(rconn.Do("ZREVRANGE",params...))
 	if err != nil{
-		log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
-		return list
+		log.Error("ArticleList has error:%v",err)
 	}
 	return list
 }
@@ -190,9 +188,9 @@ func UpdateArticleInfo(a_id int,title,content,tagids string)int{
 /**
 	添加一篇文章
  */
-func AddArticle(cateid int,title,content,tagids string) int{
+func AddArticle(cateid int,title,user,content,tagids string) int{
 	db := conn.GetMysqlConn()
-	sql := "insert into b_article(title,content,categoryid,publish_time,publish_date) values(?,?,?,?,?)"
+	sql := "insert into b_article(title,content,user,categoryid,publish_time,publish_date) values(?,?,?,?,?,?)"
 
 	tx,err := db.Begin()
 	if err != nil{
@@ -201,7 +199,7 @@ func AddArticle(cateid int,title,content,tagids string) int{
 	}
 	defer tx.Rollback()
 
-	result,err := tx.Exec(sql,title,content,cateid,time.Now().Unix(),time.Now().Format("20060102"))
+	result,err := tx.Exec(sql,title,content,user,cateid,time.Now().Unix(),time.Now().Format("20060102"))
 	if err != nil{
 		log.Error("AddArticle has error:%v",err)
 		return -2

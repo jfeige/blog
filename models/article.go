@@ -13,7 +13,7 @@ type Article struct {
 	Id int `redis:"id"`
 	Title string `redis:"title"`
 	Content string `redis:"content"`
-	Userid int  `redis:"userid"`
+	User string  `redis:"user"`
 	Categoryid int `redis:"categoryid"`
 	Read_count int `redis:"read_count"`
 	Comment_count int `redis:"comment_count"`
@@ -45,11 +45,11 @@ func (this *Article) Load(id int) error{
 		}
 
 	}
-	sql := "select id,title,content,userid,categoryid,read_count,comment_count,publish_time,publish_date,isshow from b_article where id=? limit 1"
+	sql := "select id,title,content,user,categoryid,read_count,comment_count,publish_time,publish_date,isshow from b_article where id=? limit 1"
 	db := conn.GetMysqlConn()
 
 	row := db.QueryRow(sql,id)
-	err = row.Scan(&this.Id,&this.Title,&this.Content,&this.Userid,&this.Categoryid,&this.Read_count,&this.Comment_count,&this.Publish_time,&this.Publish_date,&this.Isshow)
+	err = row.Scan(&this.Id,&this.Title,&this.Content,&this.User,&this.Categoryid,&this.Read_count,&this.Comment_count,&this.Publish_time,&this.Publish_date,&this.Isshow)
 	if err != nil{
 		return err
 	}
@@ -85,13 +85,6 @@ func FilterNilArticle(articleList []*Article)[]*Article{
 		}
 	}
 	return articleList
-}
-
-/**
-	获取作者
- */
-func (this *Article) User()string{
-	return "张三"
 }
 
 /**

@@ -196,6 +196,7 @@ func AddComment(aid,tp,cid int,name interface{},content string){
 	result,err := tx.Exec(sql,aid,tp,cid,name,content,time.Now().Unix())
 	if err != nil{
 		log.Error("AddComment has error. aid:%d,tp:%d,cid:%d,name:%v,content;%s,error:%v",aid,tp,cid,name,content,err)
+		return
 	}
 	commentId,_ := result.LastInsertId()
 	var ordertime float64

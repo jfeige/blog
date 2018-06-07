@@ -21,12 +21,12 @@
               {{end}}
               <!--<a href="#">orci</a>, <a href="#">lectus</a>, <a href="#">varius</a>, <a href="#">turpis</a>-->
           </p>
-          <p><a href="#"><strong>评论 ({{.article.Comment_count}})</strong></a>  <span>&nbsp;&bull;&nbsp;</span>  {{.article.FormatPublishTime "Jan 02, 2006"}}  <span>&nbsp;&bull;&nbsp;</span>  <a href="#"><strong>Edit</strong></a></p>
+          <p><a href="#"><strong>评论 ({{.article.Comment_count}})</strong></a>  <span>&nbsp;&bull;&nbsp;</span>  {{.article.FormatPublishTime "Jan 02, 2006"}}  <span>&nbsp;&bull;&nbsp;</span>  </p>
         </div>
         {{if gt .article.Comment_count 0}}
             <div class="article">
               <h2><span>{{.article.Comment_count}}</span> Responses</h2><div class="clr"></div>
-              {{range $k, $v := .commentList}}
+              {{range $k, $v := .commList}}
                  {{if eq $v.Type 1}}
                     <div id="comment_{{$v.Id}}" class="comment" style="padding: 5px 0 0 50px;">
                       <span>
@@ -42,7 +42,9 @@
                             <p><a href="#">{{$v.Name}}</a> Says:<br />{{$v.FormatAtime "Jan 02th, 2006 at 15:04"}}</p>
                              <p>{{$v.Content}}</p>
                           </span>
-                          <a  onclick="showHuifu('{{$v.Id}}');">回复</a>
+                         {{if $.session.Has "uid"}}
+                            <a  onclick="showHuifu('{{$v.Id}}');">回复</a>
+                         {{end}}
                      </div>
                  {{end}}
               {{end}}
@@ -51,10 +53,13 @@
         <div id="pinglun" class="article">
           <h2>发表评论</h2><div class="clr"></div>
             <ol>
-                <li>
-                    <label for="message">姓名<span style="color:red">*</span></label>
-                    <input type="text" id="name" name="name"/>
-                </li>
+                {{if .session.Has "uid"}}
+                {{else}}
+                    <li>
+                        <label for="message">姓名<span style="color:red">*</span></label>
+                        <input type="text" id="name" name="name"/>
+                    </li>
+                {{end}}
                 <li>
                   <label for="message">内容<span style="color:red">*</span></label>
                   <textarea id="message" name="message" rows="8" cols="50"></textarea>
@@ -93,7 +98,7 @@
         if($('#huifu').length > 0) {
             $('#huifu').remove();
         }
-        var str = $("<div id='huifu'><h3>发表评论&nbsp;&nbsp;&nbsp;&nbsp;<a onclick='hideHuifu();'>取消回复</a></h3><div><ol><li><label for='message'>姓名<span style='color:red'>*</span></label><input type='text' id='name' name='name'/><input type='hidden' name='cid' id='cid' value='"+id+"'/></li><li><label for='message'>内容<span style='color:red'>*</span></label><textarea id='message' name='message' rows='8' cols='50'></textarea></li><li><input type='image' name='imageField' id='imageField' src=/static/img/submit.gif class='send' onclick='recommd({{.article.Id}},1,"+id+");'/><div class='clr'></div></li></ol></div></div>");
+        var str = $("<div id='huifu'><h3>发表评论&nbsp;&nbsp;&nbsp;&nbsp;<a onclick='hideHuifu();'>取消回复</a></h3><div><ol><li><input type='hidden' name='cid' id='cid' value='\"+id+\"'/><label for='message'>内容<span style='color:red'>*</span></label><textarea id='message' name='message' rows='8' cols='50'></textarea></li><li><input type='image' name='imageField' id='imageField' src=/static/img/submit.gif class='send' onclick='recommd({{.article.Id}},1,"+id+");'/><div class='clr'></div></li></ol></div></div>");
         $('#comment_' + id).append(str);
     }
     function hideHuifu(){
@@ -104,41 +109,54 @@
     }
     //type 0:评论; 1:回复
     function recommd(aid,type,cid){
-        var name = $('#name').val();
+        var name = "";
         var content = $('#message').val();
-        if($.trim(name) == ""){
-            alert("请输入你的姓名!");
-            return;
+        var msg = "确定要发表该评论吗?";
+        if(type == "1"){
+            msg = "确定要发表该回复吗?";
+        }else{
+            if($('#name').length > 0){
+                name = $('#name').val();
+                if($.trim(name) == ""){
+                    alert("请输入你的姓名!");
+                    return;
+                }
+            }
         }
+
         if($.trim(content) == ""){
             alert("回复内容不能为空!");
             return;
         }
-        var aj = $.ajax( {
-            url:'/comment/addComment',// 跳转到 action
-            data:{
-                name : name,
-                content : content,
-                aid : aid,
-                type : type,
-                cid : cid
-            },
-            type:'post',
-            cache:false,
-            dataType:'json',
-            success:function(data) {
-                if(data.errcode == 0 ){
-                    alert("评论成功")
-                }else{
-                    alert("评论失败，请重试")
+
+        if(confirm(msg)){
+            var aj = $.ajax( {
+                url:'/addComment',// 跳转到 action
+                data:{
+                    name : name,
+                    content : content,
+                    aid : aid,
+                    type : type,
+                    cid : cid
+                },
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("评论成功")
+                    }else{
+                        alert(data.errinfo)
+                    }
+                    window.location.href="/article/" + aid
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/article/" + aid
                 }
-                window.location.href="/article/" + aid
-            },
-            error : function() {
-                alert("数据库异常，请稍后重试！");
-                window.location.href="/article/" + aid
-            }
-        });
+            });
+        }
+
     }
 </script>
 
