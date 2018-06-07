@@ -11,7 +11,7 @@ import (
 
 
 /**
-	添加一条回复	ajax请求
+	添加一条回复
  */
 func AddComment(context *gin.Context){
 
@@ -44,6 +44,39 @@ func AddComment(context *gin.Context){
 		return
 	}
 	tp,_ := strconv.Atoi(tmp_tp)   //0:评论;1:回复
+
+	var session *models.Session
+	var name string
+
+	tmpSession,ok := context.Get("session")
+	if !ok && tp == 1{
+		errcode = -1
+		errinfo = "只有站长才可以回复!"
+		context.Abort()
+		return
+	}
+	session = tmpSession.(*models.Session)
+	if !session.Has("uid") && tp == 1{
+		errcode = -1
+		errinfo = "只有站长才可以回复!"
+		context.Abort()
+		return
+	}
+
+	if session.Has("uid"){
+		name = session.GetSession("nickname").(string)
+	}else{
+		name,ok = context.GetPostForm("name")
+		if !ok{
+			//参数错误
+			return
+		}
+		if name == ""{
+			errinfo = "姓名不能为空"
+			return
+		}
+	}
+
 	tmp_cid,ok := context.GetPostForm("cid")
 	if !ok && tp == 1{
 		errinfo = "参数错误，请刷新后重试!"
@@ -54,15 +87,7 @@ func AddComment(context *gin.Context){
 		errinfo = "参数错误，请刷新后重试!"
 		return
 	}
-	name,ok := context.GetPostForm("name")
-	if !ok{
-		//参数错误
-		return
-	}
-	if name == ""{
-		errinfo = "姓名不能为空"
-		return
-	}
+
 	content,ok := context.GetPostForm("content")
 	if !ok{
 		//参数错误
@@ -72,6 +97,7 @@ func AddComment(context *gin.Context){
 		errinfo = "内容不能为空"
 		return
 	}
+
 	models.AddComment(a_id,tp,cid,name,content)
 
 	errcode = 0
