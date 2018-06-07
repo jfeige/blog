@@ -221,9 +221,11 @@ func AddArticle(context *gin.Context){
 			errinfo = "参数错误，请重试!"
 			return
 		}
+		tmpSession,_ := context.Get("session")
+		session := tmpSession.(*models.Session)
+		user := session.GetSession("nickname").(string)
 
-
-		code := models.AddArticle(cateid,title,content,tagids)
+		code := models.AddArticle(cateid,title,user,content,tagids)
 		if code < 0{
 			errcode = -2
 			errinfo = "添加失败，请刷新后重试!"
