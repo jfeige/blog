@@ -21,12 +21,8 @@
             </div>
         {{end}}
         <div class="article" style="padding:5px 20px 2px 20px; background:none; border:0;">
-          <p>Page {{.page}} of {{.allPage}}
-              <span class="butons">
-                {{range $p, $v := .pages}}
-                  <a href="{{$.url}}/{{$v}}" {{if eq $.page $v}}class="active"{{end}}>{{$v}}</a>
-                {{end}}
-              </span>
+          <p>
+              <span id="pagelist" class="butons"></span>
           </p>
         </div>
       </div>
@@ -36,7 +32,11 @@
   </div>
 
 </div>
+<script language="JavaScript">
+    var pageStr = $('{{.pager.AllLink}}');
+    $('#pagelist').append(pageStr);
 
+</script>
 </body>
 </html>
 {{end}}
