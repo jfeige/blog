@@ -18,7 +18,7 @@
             <ul class="search">
                 <li>
                     <button type="button"  class="button border-green" id="checkall"><span class="icon-check"></span> 全选</button>
-                    <button type="submit" class="button border-red"><span class="icon-trash-o"></span> 批量删除</button>
+                    <button type="button" class="button border-red" onclick="DelSelect();"><span class="icon-trash-o"></span> 批量删除</button>
                 </li>
             </ul>
         </div>
@@ -36,7 +36,7 @@
                     <td>{{$v.User}}</td>
                     <td>{{$v.FormatContent}}</td>
                     <td>{{$v.FormatPublishTime "2006-01-02 15:04:05"}}</td>
-                    <td><div class="button-group"> <a class="button border-red" href="javascript:void(0)" onclick=""><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/viewComment/{{$v.Id}}"><span class="icon-comment-o"></span> 查看</a></div></td>
+                    <td><div class="button-group"> <a class="button border-red" href="javascript:void(0)" onclick="delMessage('{{$v.Id}}');"><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/viewMsg/{{$v.Id}}"><span class="icon-comment-o"></span> 查看</a></div></td>
                 </tr>
             {{end}}
             <tr>
@@ -48,13 +48,14 @@
     </div>
 </form>
 <script type="text/javascript">
-    var pageStr = $('{{.pager.OutPut}}');
+    var page = '{{.page}}';
+    var pageStr = $('{{.pager.AllLink}}');
     $('#pagelist').append(pageStr);
-    function delComment(a_id,c_id){
-        if(confirm("您确定要提删除该评论吗?")){
+    function delMessage(mid){
+        if(confirm("确定要提删除该留言吗?")){
             var aj = $.ajax( {
-                url:'/manage/delComment',
-                data:{aid : a_id,cid:c_id},
+                url:'/manage/delMessage',
+                data:{mid : mid},
                 type:'post',
                 cache:false,
                 dataType:'json',
@@ -64,18 +65,18 @@
                     }else{
                         alert(data.errinfo);
                     }
-                    window.location.href="/manage/commentList/0";
+                    window.location.href="/manage/msgList/" + page;
                 },
                 error : function() {
                     alert("数据库异常，请稍后重试！");
-                    window.location.href="/manage/commentList/0";
+                    window.location.href="/manage/msgList/" + page;
                 },
             });
         }
     }
 
     function del(id){
-        if(confirm("您确定要删除吗?")){
+        if(confirm("确定要删除吗?")){
 
         }
     }
@@ -92,21 +93,41 @@
     })
 
     function DelSelect(){
+        var checkID = [];
+
         var Checkbox=false;
-        $("input[name='id[]']").each(function(){
-            if (this.checked==true) {
-                Checkbox=true;
-            }
+        $("input[name='id[]']:checked").each(function(i){
+            checkID[i] =$(this).val();
+            Checkbox=true;
         });
-        if (Checkbox){
-            var t=confirm("您确认要删除选中的内容吗？");
-            if (t==false) return false;
+        var ids = checkID.join(',');
+        if (!Checkbox){
+            alert("请选中要删除的id!");
+            return;
         }
-        else{
-            alert("请选择您要删除的内容!");
-            return false;
+        if(confirm("确定要提删除这批留言吗?")){
+            var aj = $.ajax( {
+                url:'/manage/delMultiMessage',
+                data:{ids : ids},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("删除成功");
+                    }else{
+                        alert(data.errinfo);
+                    }
+                    window.location.href="/manage/msgList/" + page;
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/msgList/" + page;
+                },
+            });
         }
     }
+
 
 </script>
 </body></html>
