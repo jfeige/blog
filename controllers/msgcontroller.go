@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 	"math"
+	"strings"
 )
 
 /**
@@ -20,18 +21,18 @@ func MessageBorad(context *gin.Context){
 		tmpPage = tmpPage[1:]
 	}
 
-	page,err := strconv.Atoi(tmpPage)
-	if err != nil || page < 1{
-		page = 1
+	curPage,err := strconv.Atoi(tmpPage)
+	if err != nil || curPage < 1{
+		curPage = 1
 	}
 
 	allCnt := models.MsgCnt()
 	pagesize := 10
 	allPage := math.Ceil(float64(allCnt)/float64(pagesize))
-	if float64(page) > allPage{
-		page = 1
+	if float64(curPage) > allPage{
+		curPage = 1
 	}
-	offset := (page - 1) * pagesize
+	offset := (curPage - 1) * pagesize
 
 	args := make(map[string]int)
 	args["pagesize"] = pagesize
@@ -52,16 +53,14 @@ func MessageBorad(context *gin.Context){
 	for i := 1; i <= int(allPage);i++{
 		pages = append(pages,i)
 	}
-
+	var perNum = 7
+	pager := models.NewPage(int(allPage),curPage,perNum,"/msg")
 	//读取中间件传来的参数
 	tmp_gh,_ := context.Get("gh")
 	gh := tmp_gh.(map[string]interface{})
 	gh["msgList"] = msgList
-	gh["allPage"] = allPage
-	gh["pages"] = pages
-	gh["page"] = page
+	gh["pager"] = pager
 	gh["allCnt"] = allCnt
-	gh["url"] = "/msg"
 
 	context.HTML(http.StatusOK,"msg.html",gh)
 }
@@ -159,11 +158,111 @@ func MsgList(context *gin.Context){
 	gh := make(map[string]interface{})
 	gh["msgList"] = msgList
 	gh["pager"] = pager
+	gh["page"] = curPage
 
 	context.HTML(http.StatusOK,"msglist.html",gh)
 
 }
 
+/*
+	留言详情
+ */
+func MsgInfo(context *gin.Context){
+
+	mid := context.Param("mid")
+	m_id,err := strconv.Atoi(mid)
+	if err != nil{
+		MsgList(context)
+		context.Abort()
+	}
+	msg := new(models.Message)
+	err = msg.Load(m_id)
+	if err != nil{
+		MsgList(context)
+		context.Abort()
+	}
+
+	context.HTML(http.StatusOK,"messageinfo.html",gin.H{
+		"msg":msg,
+	})
+}
+
 /**
 	删除一个留言
+*/
+
+/**
+	删除一条评论
  */
+func DelMessage(context *gin.Context){
+	var errcode int
+	var errinfo string
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
+	}()
+
+	m_id,ok := context.GetPostForm("mid")
+	if !ok{
+		errcode = -1
+		errinfo = "参数不全，请重试"
+		return
+	}
+	mid,err := strconv.Atoi(m_id)
+	if err != nil{
+		errcode = -1
+		errinfo = "参数错误，请重试"
+		return
+	}
+
+	//执行删除
+	code := models.DelMessage(mid)
+
+	if code < 0{
+		errcode = -2
+		errinfo = "删除失败，请刷新后重试!"
+		return
+	}
+
+	return
+}
+
+/**
+	批量删除留言
+ */
+func DelMultiMessage(context *gin.Context){
+	var errcode int
+	var errinfo string
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
+	}()
+
+	ids,ok := context.GetPostForm("ids")
+	if !ok{
+		errcode = -1
+		errinfo = "请选择要删除的id"
+		return
+	}
+	mids := strings.Split(ids,",")
+	if len(mids) == 0{
+		errcode = -1
+		errinfo = "请选择要删除的id"
+		return
+	}
+
+	//执行删除
+	code := models.DelMultiMessage(ids,mids)
+
+	if code < 0{
+		errcode = -2
+		errinfo = "删除失败，请刷新后重试!"
+		return
+	}
+
+	return
+}

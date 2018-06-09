@@ -115,11 +115,7 @@ func CommentList(context *gin.Context){
 	var wg sync.WaitGroup
 
 	tmpArteId := context.Param("arteid")
-	if tmpArteId != ""{
-		tmpArteId = tmpArteId[1:]
-	}else{
-		tmpArteId = "0"
-	}
+
 
 	arteid,_ := strconv.Atoi(tmpArteId)
 	//如果没有指定文章id，则读取所有评论，降序排列
