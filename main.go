@@ -59,6 +59,8 @@ func initRouter()*gin.Engine{
 	router.GET("/msg/*page",FrontWare(),SessionWare(),controllers.MessageBorad)
 	//提交留言
 	router.POST("/addMsg",SessionWare(),controllers.AddMsg)
+	//关于我
+	router.GET("/my",FrontWare(),SessionWare(),controllers.Myinfo)
 
 	//跳转到登录页面
 	router.GET("/login",SessionWare(),controllers.Login)
