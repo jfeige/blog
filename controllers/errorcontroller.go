@@ -16,8 +16,10 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 
 	requestUri := strings.ToUpper(context.Request.RequestURI)
 	if strings.HasPrefix(requestUri,"/MANAGE"){
+		fmt.Println("-----a-----")
 		context.HTML(http.StatusOK,"manage/error.html",gh)
 	}else{
+		fmt.Println("-----b-----")
 		var wg sync.WaitGroup
 
 		//网站设置&&个人档案
@@ -35,11 +37,11 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 		articleList := make([]*models.Article,len(article_ids))
 		for pos,id := range article_ids{
 			wg.Add(1)
-			models.MultipleLoadArticle(id,pos,articleList,&wg)
+			go models.MultipleLoadArticle(id,pos,articleList,&wg)
 		}
 		wg.Wait()
 
-
+		fmt.Println("-----c-----")
 		gh["webSet"] = webSet
 		gh["articleList"] = articleList
 
