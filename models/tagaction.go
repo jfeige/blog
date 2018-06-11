@@ -131,12 +131,12 @@ func DelTag(id string)int {
 
 	go DelKey("tag:" + id)
 	keys := make([]interface{},0)
-	keys = append(keys,"taglist")
+	keys = append(keys,"tagList")
 	for _,v := range aids{
 		keys = append(keys,"tagids:" + v)
 	}
 	go DelKeys(keys)
-	DelZsetData("taglist",id)
+	DelZsetData("tagList",id)
 
 	return 0
 
