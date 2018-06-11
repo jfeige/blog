@@ -143,6 +143,16 @@ func MLogin(context *gin.Context){
 		})
 }
 
+/**
+	关于我
+ */
+func Myinfo(context *gin.Context){
+	tmp_gh,_ := context.Get("gh")
+	gh := tmp_gh.(map[string]interface{})
+
+	context.HTML(http.StatusOK,"myinfo.html",gh)
+}
+
 
 /**
 	登录
