@@ -1,0 +1,106 @@
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="renderer" content="webkit">
+    <title>类别管理</title>
+    <link rel="stylesheet" href="/static/css/pintuer.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/pintuer.js"></script>
+</head>
+<body>
+<div class="panel admin-panel">
+  <div class="panel-head"><strong class="icon-reorder"> 友链列表</strong></div>
+  <div class="padding border-bottom">
+      <input type="text" class="input w50" name="webname" id="webname" value="" placeholder="请输入友链名称"  />&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" class="input w50" name="weburl" id="weburl" value="" placeholder="请输入友链地址"  />&nbsp;&nbsp;&nbsp;&nbsp;<a class="button border-yellow" href="" onclick="add();"><span class="icon-plus-square-o"></span> 添加友链</a>
+  </div> 
+  <table class="table table-hover text-center">
+    <tr>
+      <th width="5%">ID</th>     
+      <th>友链名称</th>
+      <th>友链url</th>
+      <th>排序</th>
+      <th width="250">操作</th>
+    </tr>
+    {{range $k, $v := .flinkList}}
+        <tr>
+          <td>{{$v.Id}}</td>
+          <td>{{$v.Webname}}</td>
+          <td>{{$v.Weburl}}</td>
+          <td>{{$v.Sort}}</td>
+          <td>
+          <div class="button-group">
+          <a type="button" class="button border-main" href="/manage/updateFlink/{{$v.Id}}"><span class="icon-edit"></span>修改</a>
+           <a class="button border-red" href="javascript:void(0)" onclick="del({{$v.Id}});"><span class="icon-trash-o"></span> 删除</a>
+          </div>
+          </td>
+        </tr>
+    {{end}}
+    
+  </table>
+</div>
+<script>
+    function add(){
+        webname = $.trim($("#webname").val());
+        if(webname == ""){
+            alert("友链名称不能为空");
+            $("#webname").focus();
+            return;
+        }
+        weburl = $.trim($("#weburl").val());
+        if(weburl == ""){
+            alert("友链地址不能为空");
+            $("#weburl").focus();
+            return;
+        }
+        if(confirm("您确定要添加该友链吗?")){
+            var aj = $.ajax( {
+                url:'/manage/addflink',
+                data:{webname : webname,weburl:weburl},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("添加成功");
+                    }else{
+                        alert(data.errinfo);
+                    }
+                    window.location.href="/manage/flink"
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/flink"
+                },
+            });
+
+        }
+    }
+
+    function del(id){
+        if(confirm("您确定要删除吗?")){
+            var aj = $.ajax( {
+                url:'/manage/delflink',
+                data:{id : id},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("删除成功");
+                    }else{
+                        alert(data.errinfo);
+                    }
+                    window.location.href="/manage/flink"
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/flink"
+                },
+            });
+        }
+    }
+</script>
+</body></html>

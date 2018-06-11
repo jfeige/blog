@@ -136,6 +136,16 @@ func initRouter()*gin.Engine{
 	manageRouter.POST("/upColumn",controllers.UpColumn)
 	//删除一个栏目
 	manageRouter.POST("/delColumn",controllers.DelColumn)
+	//友链列表
+	manageRouter.GET("/flink",controllers.FlinkList)
+	//添加友链
+	manageRouter.POST("/addflink",controllers.AddFlink)
+	//删除友链
+	manageRouter.POST("/delflink",controllers.DelFlink)
+	//修改友链，跳转到修改页面
+	manageRouter.GET("/updateFlink/:fid",controllers.UpdateFlink)
+	//提交修改友链
+	manageRouter.POST("/upFlink",controllers.UpFlink)
 	//退出登录
 	manageRouter.GET("/logout",controllers.Logout)
 

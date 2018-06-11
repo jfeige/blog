@@ -1,0 +1,102 @@
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="/static/css/pintuer.css">
+<link rel="stylesheet" href="/static/css/admin.css">
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/pintuer.js"></script>
+</head>
+<body>
+<div class="panel admin-panel">
+  <div class="panel-head"><strong><span class="icon-key"></span> 修改友链</strong></div>
+  <div class="body-content">
+    <form method="post" class="form-x" action="">
+      <div class="form-group">
+        <div class="label">
+          <label for="sitename">友链名称：</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" id="webname" name="webname" size="50" value="{{.flink.Webname}}"/>
+        </div>
+      </div>
+        <div class="form-group">
+            <div class="label">
+                <label for="sitename">友链url：</label>
+            </div>
+            <div class="field">
+                <input type="text" class="input w50" id="weburl" name="weburl" size="50" value="{{.flink.Weburl}}"/>
+            </div>
+        </div>
+      <div class="form-group">
+          <div class="label">
+              <label for="sitename">排序：</label>
+          </div>
+          <div class="field">
+              <input type="text" class="input w50" size="5" name="sort" id="sort" value="{{.flink.Sort}}" />
+          </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="label">
+          <label></label>
+        </div>
+        <div class="field">
+            <input type="hidden" id="fid" value="{{.flink.Id}}"/>
+            <button class="button bg-main backward" type="button" onclick="history.go(-1);"> 返回</button>&nbsp;&nbsp;&nbsp;&nbsp;<button class="button bg-main icon-check-square-o" type="button" onclick="updateFlink();"> 提交</button>
+        </div>
+      </div>      
+    </form>
+  </div>
+</div>
+<script language="JavaScript">
+    function updateFlink(){
+        var webname = $.trim($("#webname").val());
+        if(webname == ""){
+            alert("友链名称不能为空");
+            return;
+        }
+        var weburl = $.trim($("#weburl").val());
+        if(weburl == ""){
+            alert("友链url不能为空");
+            return;
+        }
+        var sort = $.trim($("#sort").attr('value'));
+        if(sort == ""){
+            alert("排序不能为空");
+            return;
+        }
+        var sort = parseInt(sort);//如果变量val是字符类型的数则转换为int类型 如果不是则ival为NaN
+        if(isNaN(sort)){
+            alert("排序必须为数字");
+            return;
+        }
+        var id = $.trim($("#fid").val());
+        if(confirm("您确定要提交修改吗?")){
+            var aj = $.ajax( {
+                url:'/manage/upFlink',
+                data:{webname : webname,weburl:weburl,sort:sort,id:id},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("修改成功");
+                    }else{
+                        alert(data.errinfo);
+                    }
+                    window.location.href="/manage/flink"
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/flink"
+                },
+            });
+        }
+    }
+</script>
+
+</body></html>
