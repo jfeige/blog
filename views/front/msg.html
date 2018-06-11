@@ -1,5 +1,4 @@
 {{template "header" .}}
-<script type="text/javascript" src="/static/js/jquery.js"></script>
 <body>
 <div class="main">
 {{template "menu" .}}
@@ -14,15 +13,7 @@
                         <div id="content" style="width:95%;">{{.Content}}</div>
                     </div>
                 {{end}}
-                    <div class="article" style="padding:5px 20px 2px 20px; background:none; border:0;">
-                        <p>Page {{.page}} of {{.allPage}}
-                            <span class="butons">
-                            {{range $p, $v := .pages}}
-                                <a href="{{$.url}}/{{$v}}" {{if eq $.page $v}}class="active"{{end}}>{{$v}}</a>
-                            {{end}}
-                            </span>
-                        </p>
-                    </div>
+                    <div class="article" style="padding:5px 20px 20px 20px; background:none; border:0;" ><span id="pagelist" class="butons"></span></div>
             {{else}}
                 <h1>o(╥﹏╥)o</h1>
                 <br/>
@@ -63,6 +54,8 @@
 
 </div>
 <script language="JavaScript">
+    var pageStr = $('{{.pager.AllLink}}');
+    $('#pagelist').append(pageStr);
     function addMsg() {
         var name = $('#name').val();
         var content = $('#message').val();

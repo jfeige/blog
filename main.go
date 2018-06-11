@@ -108,6 +108,24 @@ func initRouter()*gin.Engine{
 	manageRouter.POST("/delComment",controllers.DelComment)
 	//留言管理
 	manageRouter.GET("/msgList/*page",controllers.MsgList)
+	//查看留言详情
+	manageRouter.GET("/viewMsg/:mid",controllers.MsgInfo)
+	//删除留言
+	manageRouter.POST("/delMessage",controllers.DelMessage)
+	//批量删除留言
+	manageRouter.POST("/delMultiMessage",controllers.DelMultiMessage)
+	//栏目管理
+	manageRouter.GET("/column",controllers.ColumnManage)
+	//添加栏目
+	manageRouter.GET("/addColumn",controllers.AddColumn)
+	//添加一个栏目
+	manageRouter.POST("/addColumn",controllers.AddColumn)
+	//修改栏目
+	manageRouter.GET("/updateColumn/:cid",controllers.UpdateColumn)
+	//提交栏目修改
+	manageRouter.POST("/upColumn",controllers.UpColumn)
+	//删除一个栏目
+	manageRouter.POST("/delColumn",controllers.DelColumn)
 	//退出登录
 	manageRouter.GET("/logout",controllers.Logout)
 
@@ -193,7 +211,6 @@ func FrontWare() gin.HandlerFunc {
 		//网站设置&&个人档案
 		webSet := new(models.Webset)
 		webSet.Load()
-
 		//分类列表
 		categroy_list := models.CategoryList()
 		categoryList := make([]*models.Category,len(categroy_list))
@@ -201,7 +218,6 @@ func FrontWare() gin.HandlerFunc {
 			wg.Add(1)
 			go models.MultipleLoadCategory(id,pos,categoryList,&wg)
 		}
-
 		//友情链接
 		flink_list := models.FLink_List()
 		flinkList := make([]*models.FriendLink,len(flink_list))
@@ -209,7 +225,6 @@ func FrontWare() gin.HandlerFunc {
 			wg.Add(1)
 			go models.MultipleLoadFLink(id,pos,flinkList,&wg)
 		}
-
 		//标签
 		tag_list := models.TagList()
 		tagList := make([]*models.Tag,len(tag_list))
@@ -217,7 +232,6 @@ func FrontWare() gin.HandlerFunc {
 			wg.Add(1)
 			go models.MultipleLoadTag(id,pos,tagList,&wg)
 		}
-
 		//最新评论,现实最近的6条评论(纯评论)
 		args := make(map[string]int)
 		args["pagesize"] = 6
@@ -239,7 +253,6 @@ func FrontWare() gin.HandlerFunc {
 			wg.Add(1)
 			go models.MultipleLoadArticle(id,pos,hotArticleList,&wg)
 		}
-
 		//文章列表
 		args = make(map[string]int)
 		article_ids := models.ArticleList(args)
@@ -248,24 +261,28 @@ func FrontWare() gin.HandlerFunc {
 			wg.Add(1)
 			go models.MultipleLoadArticle(id,pos,articleList,&wg)
 		}
+		//首页菜单
+		column_ids := models.ColumnList()
+		columnList := make([]*models.Column,len(column_ids))
+		for pos,id := range column_ids{
+			wg.Add(1)
+			go models.MultipleLoadColumn(id,pos,columnList,&wg)
+		}
 		wg.Wait()
-
 		//过滤空数据
 		articleList = models.FilterNilArticle(articleList)
 		hotArticleList = models.FilterNilArticle(hotArticleList)
 		categoryList = models.FilterNilCategory(categoryList)
 		flinkList = models.FilterNilFriendLink(flinkList)
 		tagList = models.FilterNilTag(tagList)
-
+		columnList = models.FilterNilColumn(columnList)
 		commentList = models.FilterNilComment(commentList)
-
 		//近期文章
 		recentList := articleList
 		if len(articleList) >= 6{
 			recentList = articleList[:6]
 		}
 
-		fmt.Println("-----",commentList)
 
 		gh := make(map[string]interface{})
 		gh["webSet"] = webSet
@@ -275,7 +292,7 @@ func FrontWare() gin.HandlerFunc {
 		gh["recentList"] = recentList
 		gh["commentList"] = commentList
 		gh["hotArticleList"] = hotArticleList
-
+		gh["columnList"] = columnList
 		c.Set("gh", gh)
 		c.Next()
 	}

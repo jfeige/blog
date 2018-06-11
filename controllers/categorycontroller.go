@@ -28,19 +28,19 @@ func CategoryFront(context *gin.Context){
 	}
 
 
-	page,err := strconv.Atoi(tmpPage)
-	if err != nil || page < 1{
-		page = 1
+	curPage,err := strconv.Atoi(tmpPage)
+	if err != nil || curPage < 1{
+		curPage = 1
 	}
 
 	allCnt := models.ArticleCnt(cateid)			//文章总数量
 	pagesize := models.BlogPageSize
 	allPage := math.Ceil(float64(allCnt)/float64(pagesize))
-	if float64(page) > allPage{
-		page = 1
+	if float64(curPage) > allPage{
+		curPage = 1
 	}
 
-	offset := (page - 1) * pagesize
+	offset := (curPage - 1) * pagesize
 
 	args := make(map[string]int)
 	args["isshow"] = -1						//博客的显示控制 -1:全部;1:显示;0:隐藏
@@ -56,23 +56,21 @@ func CategoryFront(context *gin.Context){
 	}
 	wg.Wait()
 
-	pages := make([]int,0)
-	for i := 1; i <= int(allPage);i++{
-		pages = append(pages,i)
+
+	var url string
+	if cateid == 0{
+		url = "/index"
+	}else{
+		url = "/category/" + strconv.Itoa(cateid)
 	}
+	var perNum = 7
+	pager := models.NewPage(int(allPage),curPage,perNum,url)
 
 	//读取中间件传来的参数
 	tmp_gh,_ := context.Get("gh")
 	gh := tmp_gh.(map[string]interface{})
 	gh["articleList"] = articleList
-	gh["allPage"] = allPage
-	gh["pages"] = pages
-	gh["page"] = page
-	if cateid == 0{
-		gh["url"] = "/index"
-	}else{
-		gh["url"] = "/category/" + strconv.Itoa(cateid)
-	}
+	gh["pager"] = pager
 
 	context.HTML(http.StatusOK,"front/index.html",gh)
 }
@@ -121,7 +119,7 @@ func DelCategory(context *gin.Context){
 
 	code := models.DelCatetory(id)
 
-	if code != 0{
+	if code < 0{
 		errcode = code
 		errinfo = "删除失败，请刷新后重试"
 		return

@@ -216,15 +216,11 @@ func AddComment(aid,tp,cid int,name interface{},content string){
 
 	tx.Commit()
 
-	rconn := conn.pool.Get()
-	defer rconn.Close()
+
+	go DelKey("article:" + strconv.Itoa(aid))
 
 	key := "commentList:*"
-	DelKeys(key)
-
-	keys := make([]interface{},0)
-	keys = append(keys,"article:" + strconv.Itoa(aid))
-	rconn.Do("DEL",keys...)
+	BlurDelKeys(key)
 
 }
 
@@ -244,19 +240,14 @@ func DelComment(aid,cid int)int{
 		return -2
 	}
 
-	rconn := conn.pool.Get()
-	defer rconn.Close()
-
-	key := "commentList:*"
-	DelKeys(key)
-
 	keys := make([]interface{},0)
 	keys = append(keys,"comment:" + strconv.Itoa(cid))
 	keys = append(keys,"article:" + strconv.Itoa(aid))
 
-	_,err = rconn.Do("DEL",keys...)
-	if err != nil{
-		log.Error("DelComment has error:%v",err)
-	}
+	go DelKeys(keys)
+
+	key := "commentList:*"
+	BlurDelKeys(key)
+
 	return errcode
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	log "github.com/alecthomas/log4go"
 	"time"
+	"strconv"
 )
 
 /**
@@ -74,14 +75,14 @@ func MsgList(args map[string]int)[]int{
 		defer rows.Close()
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
-		var id,atime,read_count int
+		var id,atime int
 		for rows.Next(){
 			err = rows.Scan(&id,&atime)
 			if err != nil{
 				log.Error("MsgList has error:%v",err)
 				continue
 			}
-			rargs = append(rargs,read_count,id)
+			rargs = append(rargs,atime,id)
 
 		}
 		if len(rargs) > 1{
@@ -107,19 +108,73 @@ func AddMsg(name,content string)int{
 
 	atime := time.Now().Unix()
 	mdate := time.Now().Format("20060102")
-	_,err := db.Exec(sql,name,content,atime,mdate)
+	result,err := db.Exec(sql,name,content,atime,mdate)
+	if err != nil {
+		log.Error("AddMsg has error. name:%v,content:%s,error:%v",  name, content, err)
+		return -1
+	}
+	id,err := result.LastInsertId()
 	if err != nil {
 		log.Error("AddMsg has error. name:%v,content:%s,error:%v",  name, content, err)
 		return -1
 	}
 
+	AddZsetData("msgList:",atime,id)
+	Incr("msgList:cnt")
+
+	return 1
+
+}
+
+
+/**
+	删除一条评论
+ */
+func DelMessage(mid int)int{
+	db := conn.GetMysqlConn()
+	sql := "delete from b_messageboard where id=?"
+
+	var errcode int
+	_,err := db.Exec(sql,mid)
+	if err != nil{
+		return -2
+	}
+
+	DelZsetData("msgList:*",mid)
+	Decr("msgList:cnt")
+
+	go DelKey("message:" + strconv.Itoa(mid))
+	return errcode
+}
+
+
+
+/**
+	删除多条评论
+ */
+func DelMultiMessage(ids string,mids []string)int{
+
+	db := conn.GetMysqlConn()
+	sql := "delete from b_messageboard where id in ("+ids+")"
+
+	var errcode int
+	_,err := db.Exec(sql)
+	if err != nil{
+		log.Error("DelMultiMessage has error:%v",err)
+		return -2
+	}
 
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
 	key := "msgList:*"
-	DelKeys(key)
+	BlurDelKeys(key)
 
-	return 1
+	keys := make([]interface{},0)
+	for _,mid := range mids{
+		keys = append(keys,"message:" + mid)
+	}
+	go DelKeys(keys)
 
+	return errcode
 }

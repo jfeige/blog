@@ -229,22 +229,18 @@ func AddArticle(cateid int,title,user,content,tagids string) int{
 	}
 	tx.Commit()
 	//更新缓存
-	rconn := conn.pool.Get()
-	defer rconn.Close()
-
-	key := "articleList:*"
-	DelKeys(key)
-	key = "tagList:*"
-	DelKeys(key)
 
 	keys := make([]interface{},0)
 	keys = append(keys,"category:" + strconv.Itoa(cateid))
 	keys = append(keys,"category:0")
 
-	_,err = rconn.Do("DEL",keys...)
-	if err != nil{
-		log.Error("AddArticle has error:%v",err)
-	}
+	DelKeys(keys)
+
+	key := "articleList:*"
+	BlurDelKeys(key)
+	key = "tagList:*"
+	BlurDelKeys(key)
+
 	return 0
 }
 
@@ -288,24 +284,22 @@ func DelArticle(aid,cateid int)int{
 	if errcode < 0{
 		return errcode
 	}
-	rconn := conn.pool.Get()
-	defer rconn.Close()
-
-	key := "articleList:*"
-	DelKeys(key)
-	key = "commentList:*"
-	DelKeys(key)
-	key = "tagList:*"
-	DelKeys(key)
 
 	keys := make([]interface{},0)
 	keys = append(keys,"article:" + strconv.Itoa(aid))
 	keys = append(keys,"category:" + strconv.Itoa(cateid))
 	keys = append(keys,"tagids:" + strconv.Itoa(aid))
 
-	_,err = rconn.Do("DEL",keys...)
-	if err != nil{
-		log.Error("DelArticle has error:%v",err)
-	}
+	go DelKeys(keys)
+
+
+	key := "articleList:*"
+	BlurDelKeys(key)
+	key = "commentList:*"
+	BlurDelKeys(key)
+	key = "tagList:*"
+	BlurDelKeys(key)
+
+
 	return 0
 }

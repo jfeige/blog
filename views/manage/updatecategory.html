@@ -61,12 +61,12 @@
         }
         var cate_sort = $.trim($("#cateSort").attr('value'));
         if(cate_sort == ""){
-            alert("排序必须为中文");
+            alert("排序为空");
             return;
         }
         var sort = parseInt(cate_sort);//如果变量val是字符类型的数则转换为int类型 如果不是则ival为NaN
         if(isNaN(sort)){
-            alert("排序必须为中文");
+            alert("排序必须为数字");
             return;
         }
         var id = $.trim($("#cateid").attr('value'));

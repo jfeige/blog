@@ -61,22 +61,20 @@ func AddTag(tagName string)(errcode int){
 	}
 	sql = "insert into b_tag(tag) values(?)"
 
-	_,err = db.Exec(sql,tagName)
+	result,err := db.Exec(sql,tagName)
+	if err != nil{
+		log.Error("AddTag has error:%v",err)
+		errcode = -3
+		return
+	}
+	id,err := result.LastInsertId()
 	if err != nil{
 		log.Error("AddTag has error:%v",err)
 		errcode = -3
 		return
 	}
 
-	rconn := conn.pool.Get()
-	defer rconn.Close()
-
-	key := "taglist"
-
-	_,err = rconn.Do("DEL",key)
-	if err != nil{
-		log.Error("AddTag has error:%v",err)
-	}
+	AddZsetData("taglist",id,id)
 
 	return
 }
@@ -96,6 +94,7 @@ func DelTag(id string)int {
 		log.Error("DelTag has error:%v",err)
 		return -2
 	}
+	defer rows.Close()
 	var aid string
 	for rows.Next(){
 		err = rows.Scan(&aid)
@@ -130,14 +129,14 @@ func DelTag(id string)int {
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
+	go DelKey("tag:" + id)
 	keys := make([]interface{},0)
 	keys = append(keys,"taglist")
-	keys = append(keys,"tag:" + id)
 	for _,v := range aids{
 		keys = append(keys,"tagids:" + v)
 	}
-
-	rconn.Do("DEL",keys...)
+	go DelKeys(keys)
+	DelZsetData("taglist",id)
 
 	return 0
 

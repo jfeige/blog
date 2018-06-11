@@ -23,9 +23,9 @@ func NewPage(allPage,curPage,perNum int,url string)*Pager{
 }
 
 /**
-	当前仅有一种分页样式
+	分页样式1
  */
-func (this *Pager)OutPut()string{
+func (this *Pager)AllLink()string{
 	var pageStr = bytes.Buffer{}
 	//首页
 	pageStr.WriteString(this.firstPage())
@@ -64,6 +64,7 @@ func (this *Pager)OutPut()string{
 
 	return pageStr.String()
 }
+
 
 /*
 	首页

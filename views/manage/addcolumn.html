@@ -1,0 +1,126 @@
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="/static/css/pintuer.css">
+<link rel="stylesheet" href="/static/css/admin.css">
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/pintuer.js"></script>
+</head>
+<body>
+<div class="panel admin-panel">
+  <div class="panel-head"><strong><span class="icon-key"></span> 添加栏目</strong></div>
+  <div class="body-content">
+    <form method="post" class="form-x" action="">
+      <div class="form-group">
+        <div class="label">
+          <label for="sitename">栏目标题：</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" id="title" name="title" size="50" value=""/>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="label">
+            <label for="sitename">栏目url：</label>
+        </div>
+        <div class="field">
+            <input type="text" class="input w50" id="url" name="url" size="50" value=""/>
+        </div>
+      </div>
+      <div class="form-group">
+          <div class="label">
+              <label for="sitename">类型：</label>
+          </div>
+          <div class="field">
+              <select id="tp" name="tp" class="input w50" onchange="choiceTp();">
+                  <option value="-1">请选择</option>
+                  <option value="0">固定栏目</option>
+                  {{range .categoryList}}
+                     <option value="{{.Id}}">{{.Name}}</option>
+                  {{end}}
+              </select>
+          </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="label">
+          <label></label>
+        </div>
+        <div class="field">
+            <input type="hidden" id="cateid" value="{{.cateotry.Id}}"/>
+            <button class="button bg-main backward" type="button" onclick="history.go(-1);"> 返回</button>&nbsp;&nbsp;&nbsp;&nbsp;<button class="button bg-main icon-check-square-o" type="button" onclick="addColumn();"> 提交</button>
+        </div>
+      </div>      
+    </form>
+  </div>
+</div>
+<script language="JavaScript">
+    function choiceTp(){
+        var tp = $('#tp').val();
+        if(tp == -1){
+            return;
+        }else if(tp == 0){
+            //手动填写
+            $('#title').attr('value','');
+            $('#title').removeAttr('readonly');
+            $('#url').attr('value','')
+            $('#url').removeAttr('readonly');
+        }else{
+            //读取类别信息
+            $('#title').attr('value',$("#tp").find("option:selected").text());
+            $('#title').attr('readonly','true');
+            $('#url').attr('value','/category/' + $('#tp').val() + '/')
+            $('#url').attr('readonly','true');
+        }
+    }
+    function addColumn(){
+        var title = $('#title').val();
+        var url = $('#url').val();
+        var tp = $('#tp').val();
+        if($.trim(title) == ""){
+            alert("栏目标题不能为空");
+            $('#title').focus();
+            return;
+        }
+        if($.trim(url) == ""){
+            alert("栏目url不能为空");
+            $('#url').focus();
+            return;
+        }
+        if(tp == -1){
+            alert("请选择栏目类型");
+            $('#tp').focus();
+            return;
+        }
+        if(tp > 0){
+            tp = 1;
+        }
+
+        if(confirm("您确定要添加该栏目吗?")){
+            var aj = $.ajax( {
+                url:'/manage/addColumn',
+                data:{title : title,url:url,tp:tp},
+                type:'post',
+                cache:false,
+                dataType:'json',
+                success:function(data) {
+                    if(data.errcode == 0 ){
+                        alert("栏目添加成功");
+                    }else{
+                        alert(data.errinfo);
+                    }
+                    window.location.href="/manage/column"
+                },
+                error : function() {
+                    alert("数据库异常，请稍后重试！");
+                    window.location.href="/manage/column"
+                },
+            });
+        }
+    }
+</script>
+</body></html>

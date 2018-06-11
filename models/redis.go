@@ -68,7 +68,7 @@ func initRedisPool() *redis.Pool {
 /**
 	模糊匹配，删除多个key
  */
-func DelKeys(key string){
+func BlurDelKeys(key string){
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
@@ -85,4 +85,97 @@ func DelKeys(key string){
 			return
 		}
 	}
+}
+
+/**
+	删除单个key
+ */
+func DelKey(key string){
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	_,err = rconn.Do("DEL",key)
+	if err != nil{
+		log.Error("DelKey has error!key:%s,error:%v",key,err)
+		return
+	}
+}
+
+/**
+	删除多个key
+ */
+func DelKeys(key []interface{}){
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	_,err = rconn.Do("DEL",key...)
+	if err != nil{
+		log.Error("DelKeys has error!key:%s,error:%v",key,err)
+		return
+	}
+}
+
+/**
+	从zset中删除单个数据
+ */
+
+func DelZsetData(key string,value interface{}){
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	rconn.Do("ZREM",key,value)
+
+}
+
+/**
+	zset添加单个数据
+ */
+
+func AddZsetData(key string,score,value interface{}){
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
+	if exists{
+		rconn.Do("ZADD",key,score,value)
+		return
+	}
+}
+
+
+/**
+	数字减1
+ */
+func Decr(key string){
+	rconn  := conn.pool.Get()
+	defer rconn.Close()
+
+	ret,_ := redis.Int(rconn.Do("DECR",key))
+	if ret < 0 {
+		rconn.Do("DEL",key)
+		return
+	}
+}
+
+/**
+	数字加1
+ */
+func Incr(key string){
+	rconn  := conn.pool.Get()
+	defer rconn.Close()
+
+	exists,_ := redis.Bool(rconn.Do("EXISTS",key))
+	if exists {
+		rconn.Do("INCR", key)
+	}
+}
+
+/**
+	HMset
+ */
+func HMset(args []interface{}){
+	rconn := conn.pool.Get()
+	defer rconn.Close()
+
+	rconn.Do("HMSET",args...)
 }

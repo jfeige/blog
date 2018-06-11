@@ -3,7 +3,6 @@ package models
 import (
 	"github.com/garyburd/redigo/redis"
 	log "github.com/alecthomas/log4go"
-	"fmt"
 )
 
 /**
@@ -28,14 +27,14 @@ func CategoryList()[]int{
 		defer rows.Close()
 		rargs := make([]interface{},0)
 		rargs = append(rargs,key)
-		var id,index int
+		var id,sort int
 		for rows.Next(){
-			err := rows.Scan(&id,&index)
+			err := rows.Scan(&id,&sort)
 			if err != nil{
-				log.Error(fmt.Sprintf("rows.Scan has error:%v",err))
+				log.Error("rows.Scan has error:%v",err)
 				continue
 			}
-			rargs = append(rargs,index,id)
+			rargs = append(rargs,sort,id)
 		}
 		if len(rargs) > 1{
 			rconn.Send("ZADD",rargs...)
@@ -43,7 +42,7 @@ func CategoryList()[]int{
 	}
 	list,err = redis.Ints(rconn.Do("ZRANGE",key,0,-1))
 	if err != nil{
-		log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
+		log.Error("redis.Ints has error:%v",err)
 		return list
 	}
 	return list
@@ -68,22 +67,21 @@ func AddCategory(name string)int{
 	}
 
 	categroy_list := CategoryList()
-
+	var sort = len(categroy_list)+1
 	sql = "insert into b_category(name,sort) values(?,?)"
-	_,err = db.Exec(sql,name,len(categroy_list)+1)
+	result,err := db.Exec(sql,name,sort)
+	if err != nil{
+		log.Error("AddCategory has error:%v",err)
+		return -4
+	}
+	id,err := result.LastInsertId()
 	if err != nil{
 		log.Error("AddCategory has error:%v",err)
 		return -4
 	}
 
-	key := "categroyList"
-	rconn := conn.pool.Get()
-	defer rconn.Close()
-
-	_,err = rconn.Do("DEL",key)
-	if err != nil{
-		log.Error("AddCategory has error:%v",err)
-	}
+	AddZsetData("categroyList",sort,id)
+	
 	return 0
 }
 
@@ -100,18 +98,10 @@ func DelCatetory(id string)int{
 		return -2
 	}
 
-	keys := make([]interface{},0)
-	keys = append(keys,"category:" + id)
-	keys = append(keys,"categroyList")
+	go DelKey("category:" + id)
+	DelZsetData("categroyList",id)
 
-	rconn := conn.pool.Get()
-	defer rconn.Close()
-
-	_,err = rconn.Do("DEL",keys...)
-	if err != nil{
-		log.Error("DelCategory has error:%v",err)
-	}
-	return 0
+	return 1
 }
 
 /**
@@ -126,15 +116,14 @@ func UpCatetory(id,name string,sort int)int{
 		return -2
 	}
 
-	keys := make([]interface{},0)
-	keys = append(keys,"categroyList")
-	keys = append(keys,"category:" + id)
-	rconn := conn.pool.Get()
-	defer rconn.Close()
+	AddZsetData("categroyList",sort,id)
+	args := make([]interface{},0)
+	args = append(args,"category:" + id)
+	args = append(args,"name")
+	args = append(args,name)
+	args = append(args,"sort")
+	args = append(args,sort)
+	HMset(args)
 
-	_,err = rconn.Do("DEL",keys...)
-	if err != nil{
-		log.Error("UpCatetory has error:%v",err)
-	}
 	return 0
 }
