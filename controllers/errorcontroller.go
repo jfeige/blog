@@ -20,11 +20,6 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 	}else{
 		var wg sync.WaitGroup
 
-		//网站设置&&个人档案
-		webSet := new(models.Webset)
-		webSet.Load()
-
-
 		//推荐阅读
 		args := make(map[string]int)
 		args["page"] = 1
@@ -37,11 +32,22 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 			wg.Add(1)
 			go models.MultipleLoadArticle(id,pos,articleList,&wg)
 		}
-		wg.Wait()
 
-		fmt.Println("------",webSet.Email)
-		gh["webSet"] = webSet
+		//首页菜单
+		column_ids := models.ColumnList()
+		columnList := make([]*models.Column,len(column_ids))
+		for pos,id := range column_ids{
+			wg.Add(1)
+			go models.MultipleLoadColumn(id,pos,columnList,&wg)
+		}
+
+		articleList = models.FilterNilArticle(articleList)
+		columnList = models.FilterNilColumn(columnList)
+
+		wg.Wait()
+		
 		gh["articleList"] = articleList
+		gh["columnList"] = columnList
 
 		context.HTML(http.StatusOK,"front/error.html",gh)
 	}
