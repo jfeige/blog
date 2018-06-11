@@ -37,7 +37,7 @@
             </tr>
             {{range $k, $v := .commetList}}
                 <tr>
-                    <td><input type="checkbox" name="id[]" value="{{$v.Id}}" />{{$v.Id}}</td>
+                    <td>{{$v.Id}}</td>
                     <td>{{$v.Name}}</td>
                     <td><a href="/manage/articleinfo/{{$v.ArticleInfo.Id}}">{{$v.ArticleInfo.Title}}</a></td>
                     <td>{{if eq $v.Type 0}}<span style="color: #9d1e15">评论</span>{{else}}<span style="color: rgba(45,14,34,0.5)">回复</span>{{end}}</td>

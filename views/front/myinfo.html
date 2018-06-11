@@ -1,0 +1,26 @@
+{{template "header" .}}
+<body>
+<div class="main">
+{{template "menu" .}}
+    <div class="clr"></div>
+    <div class="content">
+        <div class="content_resize">
+            <div class="mainbar">
+                    <div class="article">
+                        <h2>我的档案</h2><div class="clr"></div>
+                        <h3>姓名：{{.webSet.Name}}</h3>
+                        <h3>QQ：{{.webSet.Qq}}</h3>
+                        <h3>邮箱：{{.webSet.Email}}</h3>
+                        <h3>当前坐标：{{.webSet.Place}}</h3>
+                        <h3>Github：{{.webSet.Github}}</h3>
+                    </div>
+            </div>
+        {{template "right" .}}
+            <div class="clr"></div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
