@@ -92,10 +92,7 @@ func Tag(context *gin.Context){
 	}
 
 	wg.Wait()
-	fmt.Println("----1--%v",tag_list)
-	fmt.Println("----2--%v",tagList)
 	tagList = models.FilterNilTag(tagList)
-	fmt.Println("----3--%v",tagList)
 
 
 	context.HTML(http.StatusOK,"manage/tag.html",gin.H{
