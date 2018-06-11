@@ -52,7 +52,9 @@ func NoRouter(context *gin.Context){
 	gh["errcode"] = "404"
 	gh["errinfo"] = "页面找不到了!"
 
-	context.HTML(http.StatusOK,"error.html",gh)
+	ToError(context,gh)
+	context.Abort()
+	//context.HTML(http.StatusOK,"error.html",gh)
 }
 
 /**
