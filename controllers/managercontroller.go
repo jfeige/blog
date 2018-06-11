@@ -90,6 +90,8 @@ func Tag(context *gin.Context){
 		go models.MultipleLoadTag(id,pos,tagList,&wg)
 	}
 
+	tagList = models.FilterNilTag(tagList)
+
 	wg.Wait()
 
 	context.HTML(http.StatusOK,"manage/tag.html",gin.H{
