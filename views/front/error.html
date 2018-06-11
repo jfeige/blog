@@ -1,10 +1,5 @@
 {{ define "front/error.html" }}
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>{{.webSet.Sitename}}</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link href="/static/css/style.css" rel="stylesheet" type="text/css" />
-</head>
+{{template "header" .}}
 <body>
 <div class="main">
 {{template "menu" .}}

@@ -32,7 +32,7 @@ func FLink_List()[]int{
 		for rows.Next(){
 			err := rows.Scan(&id,&sort)
 			if err != nil{
-				log.Error(fmt.Sprintf("rows.Scan has error:%v",err))
+				log.Error("rows.Scan has error:%v",err)
 				continue
 			}
 			rargs = append(rargs,sort,id)
@@ -43,7 +43,7 @@ func FLink_List()[]int{
 	}
 	list,err = redis.Ints(rconn.Do("ZRANGE",key,0,-1))
 	if err != nil{
-		log.Error(fmt.Sprintf("redis.Ints has error:%v",err))
+		log.Error("redis.Ints has error:%v",err)
 		return list
 	}
 	return list
