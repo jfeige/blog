@@ -2,15 +2,23 @@ package main
 
 import (
 	"gopkg.in/gin-gonic/gin.v1"
+	log "github.com/alecthomas/log4go"
 	"blog/controllers"
 	"net/http"
 	"blog/models"
 	"fmt"
 	"sync"
+	"runtime"
 )
 
+func init(){
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
 
 func main() {
+
+	log.LoadConfiguration("./conf/blog-log.xml")
+	defer log.Close()
 
 	gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
 
