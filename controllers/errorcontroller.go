@@ -6,6 +6,7 @@ import (
 	"sync"
 	"blog/models"
 	"strings"
+	"fmt"
 )
 
 /**
@@ -48,6 +49,7 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 
 
 func NoRouter(context *gin.Context){
+	fmt.Println("---------NoRouter")
 	gh := make(map[string]interface{})
 	gh["errcode"] = "404"
 	gh["errinfo"] = "页面找不到了!"

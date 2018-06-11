@@ -140,9 +140,9 @@ func initRouter()*gin.Engine{
 	manageRouter.GET("/logout",controllers.Logout)
 
 
-	manageRouter.GET("/test",func(context *gin.Context){
-		context.HTML(http.StatusOK,"test.html",nil)
-	})
+	//manageRouter.GET("/test",func(context *gin.Context){
+	//	context.HTML(http.StatusOK,"test.html",nil)
+	//})
 
 	//404处理(这里还有问题，前台和后台的区分问题)
 	router.NoRoute(controllers.NoRouter)
