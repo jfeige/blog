@@ -55,7 +55,6 @@ func NoRouter(context *gin.Context){
 	gh["errinfo"] = "页面找不到了!"
 
 	ToError(context,gh)
-	context.Abort()
 	//context.HTML(http.StatusOK,"error.html",gh)
 }
 
