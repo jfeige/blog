@@ -74,7 +74,7 @@ func AddTag(tagName string)(errcode int){
 		return
 	}
 
-	AddZsetData("taglist",id,id)
+	AddZsetData("tagList",id,id)
 
 	return
 }
