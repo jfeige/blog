@@ -20,6 +20,9 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 	}else{
 		var wg sync.WaitGroup
 
+		webSet := new(models.Webset)
+		webSet.Load()
+
 		//推荐阅读
 		args := make(map[string]int)
 		args["page"] = 1
@@ -45,9 +48,10 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 		columnList = models.FilterNilColumn(columnList)
 
 		wg.Wait()
-		
+
 		gh["articleList"] = articleList
 		gh["columnList"] = columnList
+		gh["webSet"] = webSet
 
 		context.HTML(http.StatusOK,"front/error.html",gh)
 	}
