@@ -39,6 +39,7 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 		}
 		wg.Wait()
 
+		fmt.Println("------",webSet.Email)
 		gh["webSet"] = webSet
 		gh["articleList"] = articleList
 
