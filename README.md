@@ -11,16 +11,20 @@ http://101.201.253.64:8090/
 
 http://101.201.253.64:8090/login
 
-帐号:admin  密码:123456
+帐号:李飞  密码:123456
 
 
 
 项目中使用到的第三方包:
 
-gopkg.in/gin-gonic/gin.v1
+框架: gopkg.in/gin-gonic/gin.v1
 
-github.com/alecthomas/log4go
+redis: github.com/garyburd/redigo/redis
 
-github.com/jfeige/lconfig
+mysql: github.com/go-sql-driver/mysql
+
+日志: github.com/alecthomas/log4go
+
+配置文件: github.com/jfeige/lconfig
 
 
