@@ -47,6 +47,7 @@
         cate_name = $.trim($("#name").attr('value'));
         if(cate_name == ""){
             alert("类别名称不能为空");
+            $('#name').focus();
             return;
         }
         if(confirm("您确定要添加该类别吗?")){

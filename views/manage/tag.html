@@ -72,6 +72,7 @@
         var tagName = $('#tag').attr('value')
         if($.trim( tagName ) == ""){
             alert("标签名称不能为空");
+            $('#tag').focus();
             return
         }
         if(confirm("确定要添加该标签吗?")){
