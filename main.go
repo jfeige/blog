@@ -23,7 +23,7 @@ func main() {
 
 	err := models.InitBaseConfig("./conf/blog.ini")
 	if err != nil{
-		log.Error(err)
+		log.Error("begin:%v",err)
 		return
 	}
 
@@ -159,9 +159,6 @@ func initRouter()*gin.Engine{
 
 	return router
 }
-
-
-
 
 /**
 	Session中间件
