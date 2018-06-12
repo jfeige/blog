@@ -16,8 +16,8 @@ func init(){
 
 func main() {
 
-	log.LoadConfiguration("./conf/blog-log.xml")
-	defer log.Close()
+	//log.LoadConfiguration("./conf/blog-log.xml")
+	//defer log.Close()
 
 	gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
 
