@@ -6,7 +6,6 @@ import (
 	"blog/controllers"
 	"net/http"
 	"blog/models"
-	"fmt"
 	"sync"
 	"runtime"
 )
@@ -24,7 +23,7 @@ func main() {
 
 	err := models.InitBaseConfig("./conf/blog.ini")
 	if err != nil{
-		fmt.Println(err)
+		log.Error(err)
 		return
 	}
 
