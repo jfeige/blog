@@ -19,6 +19,10 @@ http://101.201.253.64:8090/login
 
 gopkg.in/gin-gonic/gin.v1
 
+github.com/garyburd/redigo/redis
+
+github.com/go-sql-driver/mysql
+
 github.com/alecthomas/log4go
 
 github.com/jfeige/lconfig
