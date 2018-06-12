@@ -37,7 +37,7 @@
                     <td>{{$v.Read_count}}</td>
                     <td>{{$v.Comment_count}}</td>
                     <td>{{$v.PublishTime}}</td>
-                    <td><div class="button-group"> <a class="button border-blue" href="/article/{{$v.Id}}" target="_blank"><span class="fa fa-hand-o-right"></span> 预览</a><a class="button border-red" href="javascript:void(0)" onclick="delArticle('{{$v.Id}}','{{$v.Categoryid}}');"><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/commentList/{{$v.Id}}/"><span class="icon-comment-o"></span> 评论</a> </div></td>
+                    <td><div class="button-group"> <a class="button border-blue" href="/article/{{$v.Id}}" target="_blank"><span class="icon-hand-o-right"></span> 预览</a><a class="button border-red" href="javascript:void(0)" onclick="delArticle('{{$v.Id}}','{{$v.Categoryid}}');"><span class="icon-trash-o"></span> 删除</a> <a class="button border-blue" href="/manage/commentList/{{$v.Id}}/"><span class="icon-comment-o"></span> 评论</a> </div></td>
                 </tr>
             {{end}}
             <tr>
