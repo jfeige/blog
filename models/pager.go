@@ -3,6 +3,7 @@ package models
 import (
 	"strconv"
 	"bytes"
+	"fmt"
 )
 
 
@@ -74,6 +75,7 @@ func (this *Pager)firstPage()string{
 		return "<a>首页</a>"
 	}
 	return "<a href='"+this.Url+"/1'>首页</a>"
+	return fmt.Sprintf("<a href='%s/1'>首页</a>",this.Url)
 }
 /*
 	尾页
@@ -82,7 +84,7 @@ func (this *Pager)endPage()string{
 	if this.CurPage == this.AllPage{
 		return "<a>尾页</a>"
 	}
-	return "<a href='" + this.Url + "/"+strconv.Itoa(this.AllPage)+"'>尾页</a>"
+	return fmt.Sprintf("<a href='%s/%d'>尾页</a>",this.Url,this.AllPage)
 }
 
 /*
@@ -92,7 +94,7 @@ func (this *Pager)prevPage()string{
 	if this.CurPage <= 1{
 		return "<a>上一页</a>"
 	}
-	return "<a href='" + this.Url + "/"+strconv.Itoa(this.CurPage-1)+"'>上一页</a>"
+	return fmt.Sprintf("<a href='%s/%d'>上一页</a>",this.Url,this.CurPage - 1)
 }
 
 /*
@@ -102,7 +104,7 @@ func (this *Pager)nextPage()string{
 	if this.CurPage >= this.AllPage{
 		return "<a>下一页</a>"
 	}
-	return "<a href='" + this.Url + "/"+strconv.Itoa(this.CurPage+1)+"'>下一页</a>"
+	return fmt.Sprintf("<a href='%s/%d'>下一页</a>",this.Url,this.CurPage + 1)
 }
 
 /*
@@ -110,7 +112,7 @@ func (this *Pager)nextPage()string{
  */
 func (this *Pager)nbPage(nb int)string{
 	if nb == this.CurPage{
-		return 	"<a class='current' href='" + this.Url + "/"+strconv.Itoa(nb)+"'>"+strconv.Itoa(nb)+"</a>"
+		return fmt.Sprintf("<a class='current' href='%s/%d'>%d</a>",this.Url,nb,nb)
 	}
-	return "<a href='" + this.Url + "/"+strconv.Itoa(nb)+"'>"+strconv.Itoa(nb)+"</a>"
+	return fmt.Sprintf("<a href='%s/%d'>%d</a>",this.Url,nb,nb)
 }

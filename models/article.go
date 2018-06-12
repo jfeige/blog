@@ -196,9 +196,13 @@ func (this *Article) PublishTime(flags ...int)string{
 /**
 	按照给定的格式格式化日期和时间
  */
-func (this *Article) FormatPublishTime(format string)string{
+func (this *Article) FormatPublishTime(format string,timeStamp ...int64)string{
+	var atime = this.Publish_time
+	if len(timeStamp) > 0{
+		atime = timeStamp[0]
+	}
 
-	return time.Unix(this.Publish_time,0).Format(format)
+	return time.Unix(atime,0).Format(format)
 }
 
 
