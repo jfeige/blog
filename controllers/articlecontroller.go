@@ -58,9 +58,7 @@ func ArticleList(context *gin.Context){
 	var wg sync.WaitGroup
 
 	c_id := context.Param("cateid")
-	if c_id != ""{
-		c_id = c_id[1:]
-	}
+
 	tmpPage := context.Param("page")
 	if tmpPage == ""{
 		tmpPage = "1"
