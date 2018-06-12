@@ -178,11 +178,11 @@
                     }else{
                         alert(data.errinfo);
                     }
-                    window.location.href="/manage/articleList/" + cateid;
+                    window.location.href="/manage/articleList/" + cateid + "/";
                 },
                 error : function() {
                     alert("数据库异常，请稍后重试！");
-                    window.location.href="/manage/articleList" + cateid;
+                    window.location.href="/manage/articleList" + cateid + "/";
                 },
             });
         }
