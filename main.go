@@ -174,6 +174,16 @@ func ExistSessionWare()gin.HandlerFunc{
 				c.Redirect(http.StatusFound,"/manage/index")
 				c.Abort()
 				return
+			}else{
+				cookie := &http.Cookie{
+					Name:     "session_id",
+					Value:    session.SessionID(),
+					Path:     "/",
+					HttpOnly: true,
+				}
+				http.SetCookie(c.Writer, cookie)
+				c.Set("session", session)
+				c.Next()
 			}
 		}
 	}

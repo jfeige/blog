@@ -11,8 +11,62 @@ import (
 
 
 
+/**
+	前台文章详情
+ */
+func Article(context *gin.Context){
+	id := context.Param("arteid")
+	a_id,err := strconv.Atoi(id)
+	if err != nil || a_id <= 0{
+		//参数错误，跳转到首页
+		context.Redirect(http.StatusFound,"/")
+	}
+	//根据文章id读取
+	article := new(models.Article)
+	err = article.Load(a_id)
+	if err != nil{
+		//数据错误或者id不正确
+		errinfo := make(map[string]interface{})
 
-//文章详情
+		errinfo["errcode"] = "404"
+		errinfo["errinfo"] = "页面找不到了!"
+
+		ToError(context,errinfo)
+		context.Abort()
+		return
+	}
+	//累计浏览量
+	go AddReadCnt(a_id)
+
+	var wg sync.WaitGroup
+
+	//评论页面，不分页
+	comment_list := models.CommentList(a_id)
+	commentList := make([]*models.Comment,len(comment_list))
+	for pos,id := range comment_list{
+		wg.Add(1)
+		models.MultipleLoadComment(id,pos,commentList,&wg)
+	}
+	wg.Wait()
+
+	tmp_gh,_ := context.Get("gh")
+	gh := tmp_gh.(map[string]interface{})
+	gh["commList"] = commentList
+	gh["cns"] = len(commentList)
+	gh["article"] = article
+
+	tmpSession,ok := context.Get("session")
+	if ok{
+		session := tmpSession.(*models.Session)
+		gh["session"] = session
+	}
+
+	context.HTML(http.StatusOK,"article.html",gh)
+}
+
+/**
+	文章详情
+ */
 func ArticleInfo(context *gin.Context){
 	id := context.Param("arteid")
 	artiId,err := strconv.Atoi(id)
