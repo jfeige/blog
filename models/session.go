@@ -95,12 +95,6 @@ func (this *Session) Del(keys ...string){
 	}
 }
 
-
-
-
-
-
-
 func generateSessid()string{
 	rstr := RandStr(6)
 	return ToMd5(rstr)
