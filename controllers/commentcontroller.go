@@ -52,14 +52,12 @@ func AddComment(context *gin.Context){
 	if !ok && tp == 1{
 		errcode = -1
 		errinfo = "只有站长才可以回复!"
-		context.Abort()
 		return
 	}
 	session = tmpSession.(*models.Session)
 	if !session.Has("uid") && tp == 1{
 		errcode = -1
 		errinfo = "只有站长才可以回复!"
-		context.Abort()
 		return
 	}
 
@@ -193,8 +191,8 @@ func CommentInfo(context *gin.Context){
 	删除一条评论
  */
 func DelComment(context *gin.Context){
-	var errcode int
-	var errinfo string
+	var errcode = -1
+	var errinfo = "参数不全，请重试"
 	defer func(){
 		context.JSON(http.StatusOK,gin.H{
 			"errcode":errcode,
@@ -204,26 +202,18 @@ func DelComment(context *gin.Context){
 
 	c_id,ok := context.GetPostForm("cid")
 	if !ok{
-		errcode = -1
-		errinfo = "参数不全，请重试"
 		return
 	}
 	cid,err := strconv.Atoi(c_id)
 	if err != nil{
-		errcode = -1
-		errinfo = "参数错误，请重试"
 		return
 	}
 	a_id,ok := context.GetPostForm("aid")
 	if !ok{
-		errcode = -1
-		errinfo = "参数不全，请重试"
 		return
 	}
 	aid,err := strconv.Atoi(a_id)
 	if err != nil{
-		errcode = -1
-		errinfo = "参数错误，请重试"
 		return
 	}
 
@@ -235,6 +225,9 @@ func DelComment(context *gin.Context){
 		errinfo = "删除失败，请刷新后重试!"
 		return
 	}
+
+	errcode = 0
+	errinfo = ""
 
 	return
 }

@@ -7,6 +7,9 @@ import (
 	"strconv"
 	"net/http"
 	"math"
+	log "github.com/alecthomas/log4go"
+	"os"
+	"io"
 )
 
 
@@ -19,20 +22,15 @@ func Article(context *gin.Context){
 	a_id,err := strconv.Atoi(id)
 	if err != nil || a_id <= 0{
 		//参数错误，跳转到首页
-		context.Redirect(http.StatusFound,"/")
+		ErrArgs(context)
+		return
 	}
 	//根据文章id读取
 	article := new(models.Article)
 	err = article.Load(a_id)
 	if err != nil{
 		//数据错误或者id不正确
-		errinfo := make(map[string]interface{})
-
-		errinfo["errcode"] = "404"
-		errinfo["errinfo"] = "页面找不到了!"
-
-		ToError(context,errinfo)
-		context.Abort()
+		ToError(context,500,"服务器开小差了，稍后再试吧!")
 		return
 	}
 	//累计浏览量
@@ -65,21 +63,23 @@ func Article(context *gin.Context){
 }
 
 /**
-	文章详情
+	后台文章详情
  */
 func ArticleInfo(context *gin.Context){
 	id := context.Param("arteid")
 	artiId,err := strconv.Atoi(id)
 	if err != nil || artiId <= 0{
 		//参数错误，跳转到首页
-		context.Redirect(302,"/")
+		ErrArgs(context)
+		return
 	}
 	//根据文章id读取
 	article := new(models.Article)
 	err = article.Load(artiId)
 	if err != nil{
 		//数据错误或者id不正确
-		context.Redirect(302,"/")
+		ToError(context,500,"服务器开小差了，稍后再试吧!")
+		return
 	}
 	var wg sync.WaitGroup
 	categroy_list := models.CategoryList()
@@ -164,8 +164,8 @@ func ArticleList(context *gin.Context){
  */
 func UpfateArticleInfo(context *gin.Context){
 
-	var errcode int
-	var errinfo string
+	var errcode = -1
+	var errinfo = "参数错误，请重试!"
 
 	defer func(){
 		context.JSON(http.StatusOK,gin.H{
@@ -176,35 +176,25 @@ func UpfateArticleInfo(context *gin.Context){
 
 	id,ok := context.GetPostForm("id")
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 	arteid,err := strconv.Atoi(id)
 	if err != nil{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 
 	title,ok := context.GetPostForm("title")
 	if !ok || title == ""{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 
 	content,ok := context.GetPostForm("content")
 	if !ok || content == ""{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 
 	tagids,ok := context.GetPostForm("checkID")
 	if !ok || tagids == ""{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 
@@ -214,6 +204,9 @@ func UpfateArticleInfo(context *gin.Context){
 		errinfo = "修改失败，请稍后重试!"
 		return
 	}
+	errcode = 0
+	errinfo = ""
+	return
 }
 
 
@@ -222,8 +215,8 @@ func UpfateArticleInfo(context *gin.Context){
  */
 func AddArticle(context *gin.Context){
 	if context.Request.Method == "POST"{
-		var errcode int
-		var errinfo string
+		var errcode = -1
+		var errinfo = "参数错误，请重试!"
 
 		defer func(){
 			context.JSON(http.StatusOK,gin.H{
@@ -233,36 +226,26 @@ func AddArticle(context *gin.Context){
 		}()
 		id,ok := context.GetPostForm("cateid")
 		if !ok{
-			errcode = -1
-			errinfo = "参数错误，请重试!"
 			return
 		}
 		cateid,err := strconv.Atoi(id)
 		if err != nil{
-			errcode = -1
-			errinfo = "参数错误，请重试!"
 			return
 		}
 
 		title,ok := context.GetPostForm("title")
 		if !ok || title == ""{
-			errcode = -1
-			errinfo = "参数错误，请重试!"
 			return
 		}
 
 		content,ok := context.GetPostForm("content")
 		if !ok || content == ""{
-			errcode = -1
-			errinfo = "参数错误，请重试!"
 			return
 		}
 
 		//
 		tagids,ok := context.GetPostForm("checkID")
 		if !ok || tagids == ""{
-			errcode = -1
-			errinfo = "参数错误，请重试!"
 			return
 		}
 		tmpSession,_ := context.Get("session")
@@ -275,6 +258,8 @@ func AddArticle(context *gin.Context){
 			errinfo = "添加失败，请刷新后重试!"
 			return
 		}
+		errcode = 0
+		errinfo = ""
 	}else{
 		var wg sync.WaitGroup
 		//获取类别列表
@@ -306,8 +291,8 @@ func AddArticle(context *gin.Context){
 	删除文章
  */
 func DelArticle(context *gin.Context){
-	var errcode int
-	var errinfo string
+	var errcode = -1
+	var errinfo = "参数错误，请重试!"
 
 	defer func(){
 		context.JSON(http.StatusOK,gin.H{
@@ -317,26 +302,18 @@ func DelArticle(context *gin.Context){
 	}()
 	a_id,ok := context.GetPostForm("arteid")
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 	aid,err := strconv.Atoi(a_id)
 	if err != nil{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 	cate_id,ok := context.GetPostForm("cateid")
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 	cateid,err := strconv.Atoi(cate_id)
 	if err != nil{
-		errcode = -1
-		errinfo = "参数错误，请重试!"
 		return
 	}
 	code := models.DelArticle(aid,cateid)
@@ -345,6 +322,42 @@ func DelArticle(context *gin.Context){
 		errinfo = "删除失败，请刷新后重试!"
 		return
 	}
+	errcode = 0
+	errinfo = ""
+	return
+}
 
+
+func UpImg(context *gin.Context){
+	var success = 0
+	var message = "上传失败,请刷新页面后重试"
+	var url string
+	defer func(){
+		context.JSON(http.StatusOK,gin.H{
+			"success" : success,
+			"message" : message,
+			"url"     : url,
+		})
+	}()
+	img, header, err := context.Request.FormFile("editormd-image-file")
+	if err != nil{
+		log.Error("UpImg has error:%v",err)
+		return
+	}
+	filename := header.Filename
+	out, err := os.Create("static/images/"+filename)
+	if err != nil{
+		log.Error("Test has error:%v",err)
+		return
+	}
+	defer out.Close()
+	_, err = io.Copy(out, img)
+	if err != nil {
+		log.Error("Test has error:%v",err)
+		return
+	}
+	success = 1
+	message = "上传成功"
+	url = "/static/images/" + filename
 	return
 }

@@ -182,8 +182,8 @@ func UpdateCatetory(context *gin.Context){
 	提交修改类别
  */
 func UpCatetory(context *gin.Context){
-	var errcode int
-	var errinfo string
+	var errcode = -1
+	var errinfo = "参数错误，请刷新后重试"
 
 	defer func(){
 		context.JSON(http.StatusOK,gin.H{
@@ -194,18 +194,15 @@ func UpCatetory(context *gin.Context){
 	}()
 	cateid,ok := context.GetPostForm("id");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 	catesort,ok := context.GetPostForm("sort");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 	catename,ok := context.GetPostForm("name");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 
 	sort,err := strconv.Atoi(catesort)
@@ -221,9 +218,13 @@ func UpCatetory(context *gin.Context){
 	//执行更新入库
 	code := models.UpCatetory(cateid,catename,sort)
 	if code < 0{
-		errcode = -1
+		errcode = -2
 		errinfo = "数据库异常，请稍后重试"
+		return
 	}
+
+	errcode = 0
+	errinfo = ""
 	return
 }
 

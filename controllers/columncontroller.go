@@ -36,8 +36,8 @@ func ColumnManage(context *gin.Context){
  */
 func AddColumn(context *gin.Context){
 	if context.Request.Method == "POST"{
-		var errcode int
-		var errinfo string
+		var errcode = -1
+		var errinfo = "参数错误，请刷新后重试!"
 
 		defer func(){
 			context.JSON(http.StatusOK,gin.H{
@@ -48,31 +48,21 @@ func AddColumn(context *gin.Context){
 		}()
 		title,ok := context.GetPostForm("title")
 		if !ok || title == ""{
-			errcode = -1
-			errinfo = "参数错误，请刷新后重试!"
 			return
 		}
 		url,ok := context.GetPostForm("url")
 		if !ok || url == ""{
-			errcode = -1
-			errinfo = "参数错误，请刷新后重试!"
 			return
 		}
 		tmpTp,ok := context.GetPostForm("tp")
 		if !ok || tmpTp == ""{
-			errcode = -1
-			errinfo = "参数错误，请刷新后重试!"
 			return
 		}
 		tp,err := strconv.Atoi(tmpTp)
 		if err != nil{
-			errcode = -1
-			errinfo = "参数错误，请刷新后重试!"
 			return
 		}
 		if !models.InArray(tp,[]int{0,1}){
-			errcode = -1
-			errinfo = "参数错误，请刷新后重试!"
 			return
 		}
 		code := models.AddColumn(title,url,tp)
@@ -84,6 +74,8 @@ func AddColumn(context *gin.Context){
 				errinfo = "添加失败，请稍后重试!"
 			}
 		}
+		errcode = 0
+		errinfo = ""
 	}else{
 		var wg sync.WaitGroup
 
@@ -112,6 +104,10 @@ func UpdateColumn(context *gin.Context){
 
 	cid := context.Param("cid")
 	id,_ := strconv.Atoi(cid)
+	if id <= 0{
+		ErrArgs(context)
+		return
+	}
 	column := new(models.Column)
 	column.Load(id)
 
@@ -126,8 +122,8 @@ func UpdateColumn(context *gin.Context){
 	提交修改类别
  */
 func UpColumn(context *gin.Context){
-	var errcode int
-	var errinfo string
+	var errcode = -1
+	var errinfo = "参数错误，请刷新后重试"
 
 	defer func(){
 		context.JSON(http.StatusOK,gin.H{
@@ -138,23 +134,19 @@ func UpColumn(context *gin.Context){
 	}()
 	cid,ok := context.GetPostForm("id");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 	column_sort,ok := context.GetPostForm("sort");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 	title,ok := context.GetPostForm("title");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 	url,ok := context.GetPostForm("url");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 
 	sort,err := strconv.Atoi(column_sort)
@@ -170,9 +162,11 @@ func UpColumn(context *gin.Context){
 	//执行更新入库
 	code := models.UpColumn(cid,title,url,sort)
 	if code < 0{
-		errcode = -1
+		errcode = -2
 		errinfo = "数据库异常，请稍后重试"
 	}
+	errcode = 0
+	errinfo = ""
 	return
 }
 
@@ -181,8 +175,8 @@ func UpColumn(context *gin.Context){
 	删除一个栏目
  */
 func DelColumn(context *gin.Context){
-	var errcode int
-	var errinfo string
+	var errcode = -1
+	var errinfo = "参数错误，请重试"
 
 	defer func(){
 		context.JSON(http.StatusOK,gin.H{
@@ -193,14 +187,10 @@ func DelColumn(context *gin.Context){
 
 	cid,ok := context.GetPostForm("id")
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请重试"
 		return
 	}
 	id,err := strconv.Atoi(cid)
 	if err != nil{
-		errcode = -1
-		errinfo = "参数错误，请重试"
 		return
 	}
 
@@ -211,7 +201,8 @@ func DelColumn(context *gin.Context){
 		errinfo = "删除失败，请刷新后重试"
 		return
 	}
-
+	errcode = 0
+	errinfo = ""
 	return
 
 }

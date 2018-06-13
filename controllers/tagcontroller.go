@@ -56,10 +56,8 @@ func TagIndex(context *gin.Context){
 	}
 	wg.Wait()
 	if len(articleList) == 0{
-		errinfo := make(map[string]interface{})
-		errinfo["errcode"] = ""
-		errinfo["errinfo"] = "暂无文章,换个标签试试吧"
-		ToError(context,errinfo)
+		ToError(context,404,"暂无文章,换个标签试试吧")
+
 		context.Abort()
 		return
 	}
@@ -85,23 +83,28 @@ func TagIndex(context *gin.Context){
 	添加一个标签
  */
 func AddTag(context *gin.Context){
-	gh := make(map[string]interface{})
+	var errcode int
+	var errinfo string
 	defer func(){
-		context.JSON(http.StatusOK,gh)
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
 	}()
 
 	tagName,ok := context.GetPostForm("name")
 	if !ok{
-		gh["errcode"] = -1
-		gh["errinfo"] = "参数错误，请重试!"
+		errcode = -1
+		errinfo = "参数错误，请重试!"
 		return
 	}
-	errcode := models.AddTag(tagName)
-	gh["errcode"] = errcode
-	if errcode < 0{
-		gh["errinfo"] = "添加失败，请刷新后重试"
-		if errcode == -2{
-			gh["errinfo"] = "已存在该标签，不能重复添加"
+	code := models.AddTag(tagName)
+	errcode = code
+
+	if code < 0{
+		errinfo = "添加失败，请刷新后重试"
+		if code == -2{
+			errinfo = "已存在该标签，不能重复添加"
 			return
 		}
 	}
@@ -111,23 +114,27 @@ func AddTag(context *gin.Context){
 	删除一个标签
  */
 func DelTag(context *gin.Context){
-	gh := make(map[string]interface{})
+	var errcode int
+	var errinfo string
 	defer func(){
-		context.JSON(http.StatusOK,gh)
+		context.JSON(http.StatusOK,gin.H{
+			"errcode":errcode,
+			"errinfo":errinfo,
+		})
 	}()
 
 	tagid,ok := context.GetPostForm("id")
 	if !ok{
-		gh["errcode"] = -1
-		gh["errinfo"] = "参数不全，请重试"
+		errcode = -1
+		errinfo = "参数不全，请重试"
 		return
 	}
-	errcode := models.DelTag(tagid)
+	code := models.DelTag(tagid)
+	errcode = code
 	if errcode < 0{
-		gh["errcode"] = -2
-		gh["errinfo"] = "数据库异常，请稍后重试"
+		errinfo = "数据库异常，请稍后重试"
 		return
 	}
 
-	gh["errcode"] = 0
+
 }

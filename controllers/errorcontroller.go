@@ -6,17 +6,20 @@ import (
 	"sync"
 	"blog/models"
 	"strings"
-	"fmt"
 )
 
+
 /**
-	没有找到路由  /manage/index2
+	错误处理
  */
-func ToError(context *gin.Context,gh map[string]interface{}){
+func error(context *gin.Context,gh map[string]interface{}){
 
 	requestUri := strings.ToUpper(context.Request.RequestURI)
+
 	if strings.HasPrefix(requestUri,"/MANAGE"){
+
 		context.HTML(http.StatusOK,"manage/error.html",gh)
+
 	}else{
 		var wg sync.WaitGroup
 
@@ -57,27 +60,37 @@ func ToError(context *gin.Context,gh map[string]interface{}){
 	}
 }
 
+/**
+	没有找到路由
+ */
 
 func NoRouter(context *gin.Context){
-	fmt.Println("---------NoRouter")
 	gh := make(map[string]interface{})
 	gh["errcode"] = "404"
 	gh["errinfo"] = "页面找不到了!"
 
-	ToError(context,gh)
-	//context.HTML(http.StatusOK,"error.html",gh)
+	error(context,gh)
 }
 
 /**
 	缺少参数
  */
-func ErrLackArgs(context *gin.Context){
+func ErrArgs(context *gin.Context){
 
 	gh := make(map[string]interface{})
 	gh["errcode"] = "400"
-	gh["errinfo"] = "参数不全，请重试!"
+	gh["errinfo"] = "参数错误，再试一次吧!"
 
+	error(context,gh)
+}
 
-	context.HTML(http.StatusOK,"error.html",gh)
+/**
+	统一错误处理
+ */
+func ToError(context *gin.Context,errcode int,errinfo string){
+	gh := make(map[string]interface{})
+	gh["errcode"] = errcode
+	gh["errinfo"] = errinfo
 
+	error(context,gh)
 }

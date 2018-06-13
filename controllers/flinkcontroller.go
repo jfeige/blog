@@ -124,8 +124,8 @@ func UpdateFlink(context *gin.Context){
 	提交修改友链
  */
 func UpFlink(context *gin.Context){
-	var errcode int
-	var errinfo string
+	var errcode = -1
+	var errinfo = "参数错误，请刷新后重试"
 
 	defer func(){
 		context.JSON(http.StatusOK,gin.H{
@@ -136,24 +136,20 @@ func UpFlink(context *gin.Context){
 	}()
 	fid,ok := context.GetPostForm("id");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 	fsort,ok := context.GetPostForm("sort");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 	webname,ok := context.GetPostForm("webname");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 
 	weburl,ok := context.GetPostForm("weburl");
 	if !ok{
-		errcode = -1
-		errinfo = "参数错误，请刷新后重试"
+		return
 	}
 
 	sort,err := strconv.Atoi(fsort)
@@ -169,8 +165,12 @@ func UpFlink(context *gin.Context){
 	//执行更新入库
 	code := models.UpFlink(fid,webname,weburl,sort)
 	if code < 0{
-		errcode = -1
+		errcode = -2
 		errinfo = "数据库异常，请稍后重试"
+		return
 	}
+	errcode = 0
+	errinfo = ""
+
 	return
 }

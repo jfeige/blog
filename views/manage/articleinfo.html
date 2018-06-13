@@ -32,7 +32,11 @@
                 syncScrolling : "single",
                 //你的lib目录的路径
                 path    : "/static/editormd/lib/",
-                imageUpload: false,//关闭图片上传功能
+
+                imageUpload: true,//关闭图片上传功能
+                imageFormats:["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+                imageUploadURL:"/manage/upimg",
+
                 /*  theme: "dark",//工具栏主题
                  previewTheme: "dark",//预览主题
                  editorTheme: "pastel-on-dark",//编辑主题 */

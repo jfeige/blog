@@ -21,10 +21,10 @@
         checkbox.labelauty + label { font: 12px "Microsoft Yahei";}
     </style>
     <script type="text/javascript">
-        var testEditor;
+        var myEditor;
 
-        testEditor=$(function() {
-            editormd("test-editormd", {
+        $(function() {
+            myEditor = editormd("test-editormd", {
                 width   : "85%",
                 height  : 640,
                 //markdown : md,
@@ -32,7 +32,9 @@
                 syncScrolling : "single",
                 //你的lib目录的路径
                 path    : "/static/editormd/lib/",
-                imageUpload: false,//关闭图片上传功能
+                imageUpload: true,//关闭图片上传功能
+                imageFormats:["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+                imageUploadURL:"/manage/upimg",
                 /*  theme: "dark",//工具栏主题
                  previewTheme: "dark",//预览主题
                  editorTheme: "pastel-on-dark",//编辑主题 */

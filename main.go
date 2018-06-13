@@ -109,6 +109,8 @@ func initRouter()*gin.Engine{
 	manageRouter.POST("/updateArticle",controllers.UpfateArticleInfo)
 	//添加文章
 	manageRouter.Any("/addArticle",controllers.AddArticle)
+	//添加文章或者修改文章时，上传图片
+	manageRouter.POST("/upimg",controllers.UpImg)
 	//删除文章
 	manageRouter.POST("/delArticle",controllers.DelArticle)
 	//查看评论详情
