@@ -127,8 +127,6 @@ func MLogin(context *gin.Context){
 			tmpSession,_ := context.Get("session")
 			session := tmpSession.(*models.Session)
 
-
-			fmt.Println("=========",session.SessionID(),session.GetSession("uid"))
 			session.SetSession("uid",user.Id)
 			session.SetSession("name",user.Name)
 			session.SetSession("nickname",user.Nickname)
@@ -158,7 +156,6 @@ func Myinfo(context *gin.Context){
 	登录
  */
 func Login(context *gin.Context){
-
 	//跳转到登录页面
 	context.HTML(http.StatusOK,"login.html",nil)
 
