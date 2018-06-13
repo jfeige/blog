@@ -10,6 +10,9 @@ import (
 )
 
 
+/**
+	前台标签首页
+ */
 func TagIndex(context *gin.Context){
 	tagid := context.Param("tagid")
 
