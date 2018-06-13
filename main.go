@@ -70,9 +70,9 @@ func initRouter()*gin.Engine{
 	router.GET("/my",FrontWare(),SessionWare(),controllers.Myinfo)
 
 	//跳转到登录页面
-	router.GET("/login",SessionWare(),controllers.Login)
+	router.GET("/login",ExistSessionWare(),controllers.Login)
 	//登录
-	router.POST("/mlogin",SessionWare(),controllers.MLogin)
+	router.POST("/mlogin",ExistSessionWare(),controllers.MLogin)
 
 	//后台页面-----------------------------------------------------------
 	manageRouter := router.Group("/manage")
@@ -158,6 +158,25 @@ func initRouter()*gin.Engine{
 
 
 	return router
+}
+
+/**
+	Session已经存在
+ */
+func ExistSessionWare()gin.HandlerFunc{
+	return func(c *gin.Context){
+		var session *models.Session
+		sessid,_ := c.Cookie("session_id")
+		if sessid != ""{
+			session = models.NewSession(sessid)
+			if session.Has("uid"){
+				//跳转到后台首页
+				c.Redirect(http.StatusFound,"/manage/index")
+				c.Abort()
+				return
+			}
+		}
+	}
 }
 
 /**
