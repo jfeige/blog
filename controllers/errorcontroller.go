@@ -1,26 +1,25 @@
 package controllers
 
 import (
+	"blog/models"
 	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
-	"sync"
-	"blog/models"
 	"strings"
+	"sync"
 )
 
-
 /**
-	错误处理
- */
-func error(context *gin.Context,gh map[string]interface{}){
+错误处理
+*/
+func error(context *gin.Context, gh map[string]interface{}) {
 
 	requestUri := strings.ToUpper(context.Request.RequestURI)
 
-	if strings.HasPrefix(requestUri,"/MANAGE"){
+	if strings.HasPrefix(requestUri, "/MANAGE") {
 
-		context.HTML(http.StatusOK,"manage/error.html",gh)
+		context.HTML(http.StatusOK, "manage/error.html", gh)
 
-	}else{
+	} else {
 		var wg sync.WaitGroup
 
 		webSet := new(models.Webset)
@@ -33,18 +32,18 @@ func error(context *gin.Context,gh map[string]interface{}){
 		args["pagesize"] = 10
 		args["offset"] = 0
 		article_ids := models.ArticleList(args)
-		articleList := make([]*models.Article,len(article_ids))
-		for pos,id := range article_ids{
+		articleList := make([]*models.Article, len(article_ids))
+		for pos, id := range article_ids {
 			wg.Add(1)
-			go models.MultipleLoadArticle(id,pos,articleList,&wg)
+			go models.MultipleLoadArticle(id, pos, articleList, &wg)
 		}
 
 		//首页菜单
 		column_ids := models.ColumnList()
-		columnList := make([]*models.Column,len(column_ids))
-		for pos,id := range column_ids{
+		columnList := make([]*models.Column, len(column_ids))
+		for pos, id := range column_ids {
 			wg.Add(1)
-			go models.MultipleLoadColumn(id,pos,columnList,&wg)
+			go models.MultipleLoadColumn(id, pos, columnList, &wg)
 		}
 
 		articleList = models.FilterNilArticle(articleList)
@@ -56,41 +55,41 @@ func error(context *gin.Context,gh map[string]interface{}){
 		gh["columnList"] = columnList
 		gh["webSet"] = webSet
 
-		context.HTML(http.StatusOK,"front/error.html",gh)
+		context.HTML(http.StatusOK, "front/error.html", gh)
 	}
 }
 
 /**
-	没有找到路由
- */
+没有找到路由
+*/
 
-func NoRouter(context *gin.Context){
+func NoRouter(context *gin.Context) {
 	gh := make(map[string]interface{})
 	gh["errcode"] = "404"
 	gh["errinfo"] = "页面找不到了!"
 
-	error(context,gh)
+	error(context, gh)
 }
 
 /**
-	缺少参数
- */
-func ErrArgs(context *gin.Context){
+缺少参数
+*/
+func ErrArgs(context *gin.Context) {
 
 	gh := make(map[string]interface{})
 	gh["errcode"] = "400"
 	gh["errinfo"] = "参数错误，再试一次吧!"
 
-	error(context,gh)
+	error(context, gh)
 }
 
 /**
-	统一错误处理
- */
-func ToError(context *gin.Context,errcode int,errinfo string){
+统一错误处理
+*/
+func ToError(context *gin.Context, errcode int, errinfo string) {
 	gh := make(map[string]interface{})
 	gh["errcode"] = errcode
 	gh["errinfo"] = errinfo
 
-	error(context,gh)
+	error(context, gh)
 }

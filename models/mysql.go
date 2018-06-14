@@ -2,19 +2,19 @@ package models
 
 import (
 	"database/sql"
-	_"github.com/go-sql-driver/mysql"
 	"errors"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-var(
-	maddress string
-	muser string
-	mpasswd string
+var (
+	maddress     string
+	muser        string
+	mpasswd      string
 	maxopenconns int
 	maxidleconns int
 )
 
-func initMysqlConfig()error{
+func initMysqlConfig() error {
 
 	muser = lcf.String("mysql::muser")
 	if muser == "" {
@@ -29,11 +29,11 @@ func initMysqlConfig()error{
 		return errors.New("Can't not find mysql parameters:maddress")
 	}
 
-	maxopenconns,err = lcf.Int("mysql::maxopenconns")
+	maxopenconns, err = lcf.Int("mysql::maxopenconns")
 	if maxopenconns == 0 {
 		return errors.New("Can't not find mysql parameters:maxopenconns")
 	}
-	maxidleconns,err = lcf.Int("mysql::maxidleconns")
+	maxidleconns, err = lcf.Int("mysql::maxidleconns")
 	if maxidleconns == 0 {
 		return errors.New("Can't not find mysql parameters:maxidleconns")
 	}
@@ -42,18 +42,17 @@ func initMysqlConfig()error{
 }
 
 //初始化mysql连接池
-func initMysql()(*sql.DB,error){
+func initMysql() (*sql.DB, error) {
 	db, err := sql.Open("mysql", muser+":"+mpasswd+"@tcp("+maddress+")/lifei?multiStatements=true&interpolateParams=true")
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	dbConfig(db)
 
-	return db,nil
+	return db, nil
 }
 
 func dbConfig(db *sql.DB) {
 	db.SetMaxOpenConns(maxopenconns)
 	db.SetMaxIdleConns(maxidleconns)
 }
-
