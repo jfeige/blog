@@ -7,6 +7,7 @@
 ./conf/blog.ini 是应用和mysql，redis的一些基本配置
 ./conf/blog-log.xml 是log4go需要的配置文件
 ```
+### 运行
 工程根目录下，有个env.sh文件，赋给可执行权限后，直接执行即可:
 ```
 ./env.sh
