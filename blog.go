@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"sync"
 	"flag"
+	"fmt"
 )
 
 var(
@@ -42,7 +43,8 @@ func main() {
 
 	err = http.ListenAndServe(models.AppPort, router)
 	if err != nil {
-		log.Error("http.ListenAndServe has error:%v", err)
+		fmt.Printf("http.ListenAndServe has error:%v\n", err)
+		log.Error("http.ListenAndServe has error:%v\n", err)
 		return
 	}
 
