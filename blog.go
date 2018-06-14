@@ -32,7 +32,7 @@ func main() {
 
 	err := models.InitBaseConfig(*configfile)
 	if err != nil {
-		log.Error("begin:%v", err)
+		log.Error("InitBaseConfig has error:%v", err)
 		return
 	}
 
