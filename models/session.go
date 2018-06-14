@@ -5,6 +5,11 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+var(
+	SessionName string
+	SessionTime int
+)
+
 type Session struct {
 	sessid string
 }
@@ -28,7 +33,10 @@ func (this *Session) Expire() {
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
-	rconn.Do("EXPIRE", this.sessid, 3600)
+	_,err := rconn.Do("EXPIRE", this.sessid, SessionTime)
+	if err != nil{
+		log.Error("Session EXPIRE has error:%v", err)
+	}
 }
 
 /**
@@ -45,7 +53,10 @@ func (this *Session) SetSession(key string, value interface{}) {
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
-	rconn.Do("HMSET", this.sessid, key, value)
+	_,err := rconn.Do("HMSET", this.sessid, key, value)
+	if err != nil{
+		log.Error("SetSession has error:%v", err)
+	}
 }
 
 /**
@@ -56,7 +67,7 @@ func (this *Session) GetSession(key string) interface{} {
 	defer rconn.Close()
 	values, err := redis.StringMap(rconn.Do("HGETALL", this.sessid))
 	if err != nil {
-		log.Error("redis.StringMap has error:%v", err)
+		log.Error("GetSession has error:%v", err)
 		return nil
 	}
 	return values[key]
@@ -70,7 +81,7 @@ func (this *Session) Has(key string) bool {
 	defer rconn.Close()
 	values, err := redis.StringMap(rconn.Do("HGETALL", this.sessid))
 	if err != nil {
-		log.Error("redis.StringMap has error:%v", err)
+		log.Error("Session Has has error:%v", err)
 		return false
 	}
 	_, ok := values[key]
@@ -85,10 +96,14 @@ func (this *Session) Del(keys ...string) {
 	rconn := conn.pool.Get()
 	defer rconn.Close()
 
+	var err error
 	if len(keys) > 0 {
-		rconn.Do("HDEL", redis.Args{}.Add(this.sessid).AddFlat(keys)...)
+		_,err = rconn.Do("HDEL", redis.Args{}.Add(this.sessid).AddFlat(keys)...)
 	} else {
-		rconn.Do("DEL", this.sessid)
+		_,err = rconn.Do("DEL", this.sessid)
+	}
+	if err != nil{
+		log.Error("Session Del has error:%v", err)
 	}
 }
 

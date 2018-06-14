@@ -9,7 +9,9 @@ import (
 
 var (
 	BlogPageSize int
-	ReadChan     chan int //文章浏览量
+	AppPort string
+
+	ReadChan     chan int 	//文章浏览量
 )
 
 var (
@@ -76,6 +78,18 @@ func (this *connect) GetMysqlConn() *sql.DB {
 读取其他配置
 */
 func initDefaultConfig() error {
+	AppPort = lcf.String("app_port")
+	if AppPort == ""{
+		return errors.New("config parameters:app_port is error!")
+	}
+	SessionName = lcf.String("session_name")
+	if SessionName == ""{
+		return errors.New("config parameters:session_name is error!")
+	}
+	SessionTime,_ = lcf.Int("session_time")
+	if SessionTime <= 0{
+		return errors.New("config parameters:session_time is error!")
+	}
 	BlogPageSize, _ = lcf.Int("bolg_pagesize")
 	if BlogPageSize <= 0 {
 		return errors.New("Can't not find default parameters:bolg_pagesize")
