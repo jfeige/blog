@@ -18,7 +18,7 @@ var (
 func initMysqlConfig() error {
 
 	mdbname = lcf.String("mysql::mdbname")
-	if muser == "" {
+	if mdbname == "" {
 		return errors.New("Can't not find mysql parameters:mdbname")
 	}
 	muser = lcf.String("mysql::muser")
