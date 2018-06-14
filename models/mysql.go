@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	mdbname 	 string
 	maddress     string
 	muser        string
 	mpasswd      string
@@ -16,6 +17,10 @@ var (
 
 func initMysqlConfig() error {
 
+	mdbname = lcf.String("mysql::mdbname")
+	if muser == "" {
+		return errors.New("Can't not find mysql parameters:mdbname")
+	}
 	muser = lcf.String("mysql::muser")
 	if muser == "" {
 		return errors.New("Can't not find mysql parameters:muser")
@@ -43,7 +48,7 @@ func initMysqlConfig() error {
 
 //初始化mysql连接池
 func initMysql() (*sql.DB, error) {
-	db, err := sql.Open("mysql", muser+":"+mpasswd+"@tcp("+maddress+")/lifei?multiStatements=true&interpolateParams=true")
+	db, err := sql.Open("mysql", muser+":"+mpasswd+"@tcp("+maddress+")/"+mdbname+"?multiStatements=true&interpolateParams=true")
 	if err != nil {
 		return nil, err
 	}
