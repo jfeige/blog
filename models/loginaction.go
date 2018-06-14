@@ -17,7 +17,7 @@ func Login(loginname, password string) (*User, bool) {
 	err = row.Scan(&user.Id, &user.Name, &user.Passwd, &user.Nickname)
 
 	if err != nil {
-		log.Error("db.Prepare has error:%v", err)
+		log.Error("Login has error:%v", err)
 		return nil, false
 	}
 
