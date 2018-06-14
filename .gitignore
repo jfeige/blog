@@ -17,5 +17,5 @@
 .idea/workspace.xml
 conf/blog.ini
 conf/blog-log.xml
-logs/
+#logs/
 static/images/
