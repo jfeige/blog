@@ -8,6 +8,14 @@ import (
 	"net/http"
 	"runtime"
 	"sync"
+	"flag"
+)
+
+var(
+
+	logfile = flag.String("log","./conf/blog-log.xml","log4go file path!")
+	configfile = flag.String("config","./conf/blog.ini","config file path")
+
 )
 
 func init() {
@@ -16,12 +24,12 @@ func init() {
 
 func main() {
 
-	log.LoadConfiguration("./conf/blog-log.xml")
+	log.LoadConfiguration(*logfile)
 	defer log.Close()
 
 	gin.SetMode(gin.DebugMode) //全局设置环境，此为开发环境，线上环境为gin.ReleaseMode
 
-	err := models.InitBaseConfig("./conf/blog.ini")
+	err := models.InitBaseConfig(*configfile)
 	if err != nil {
 		log.Error("begin:%v", err)
 		return
@@ -32,7 +40,7 @@ func main() {
 
 	router := initRouter()
 
-	http.ListenAndServe(":8090", router)
+	http.ListenAndServe(models.AppPort, router)
 
 }
 
@@ -76,6 +84,7 @@ func initRouter() *gin.Engine {
 	//后台首页
 	manageRouter.GET("", controllers.MIndex)
 	manageRouter.GET("/index", controllers.MIndex)
+	//网站基本资料设置页面
 	manageRouter.GET("/webset", controllers.Webset)
 	//更新网站设置
 	manageRouter.POST("/updateWebSet", controllers.UpdateWebSet)
@@ -162,7 +171,7 @@ Session已经存在
 func ExistSessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var session *models.Session
-		sessid, _ := c.Cookie("session_id")
+		sessid, _ := c.Cookie(models.SessionName)
 		if sessid != "" {
 			session = models.NewSession(sessid)
 			if session.Has("uid") {
@@ -172,7 +181,7 @@ func ExistSessionWare() gin.HandlerFunc {
 				return
 			} else {
 				cookie := &http.Cookie{
-					Name:     "session_id",
+					Name:     models.SessionName,
 					Value:    session.SessionID(),
 					Path:     "/",
 					HttpOnly: true,
@@ -191,14 +200,14 @@ Session中间件
 func SessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var session *models.Session
-		sessid, _ := c.Cookie("session_id")
+		sessid, _ := c.Cookie(models.SessionName)
 		if sessid == "" {
 			session = models.NewSession()
 		} else {
 			session = models.NewSession(sessid)
 		}
 		cookie := &http.Cookie{
-			Name:     "session_id",
+			Name:     models.SessionName,
 			Value:    session.SessionID(),
 			Path:     "/",
 			HttpOnly: true,
@@ -218,14 +227,14 @@ func SessionWare() gin.HandlerFunc {
 func NoSessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var session *models.Session
-		sessid, _ := c.Cookie("session_id")
+		sessid, _ := c.Cookie(models.SessionName)
 		if sessid == "" {
 			session = models.NewSession()
 		} else {
 			session = models.NewSession(sessid)
 		}
 		cookie := &http.Cookie{
-			Name:     "session_id",
+			Name:     models.SessionName,
 			Value:    session.SessionID(),
 			Path:     "/",
 			HttpOnly: true,
@@ -309,6 +318,7 @@ func FrontWare() gin.HandlerFunc {
 			go models.MultipleLoadColumn(id, pos, columnList, &wg)
 		}
 		wg.Wait()
+
 		//过滤空数据
 		articleList = models.FilterNilArticle(articleList)
 		hotArticleList = models.FilterNilArticle(hotArticleList)
@@ -317,6 +327,7 @@ func FrontWare() gin.HandlerFunc {
 		tagList = models.FilterNilTag(tagList)
 		columnList = models.FilterNilColumn(columnList)
 		commentList = models.FilterNilComment(commentList)
+
 		//近期文章
 		recentList := articleList
 		if len(articleList) >= 6 {
