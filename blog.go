@@ -40,7 +40,11 @@ func main() {
 
 	router := initRouter()
 
-	http.ListenAndServe(models.AppPort, router)
+	err = http.ListenAndServe(models.AppPort, router)
+	if err != nil {
+		log.Error("http.ListenAndServe has error:%v", err)
+		return
+	}
 
 }
 
