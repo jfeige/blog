@@ -19,3 +19,4 @@ conf/blog.ini
 conf/blog-log.xml
 #logs/
 static/images/
+logs/*

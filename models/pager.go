@@ -64,6 +64,60 @@ func (this *Pager) AllLink() string {
 	return pageStr.String()
 }
 
+/**
+分页样式2 无首页和尾页
+*/
+func (this *Pager) PageLink() string {
+	var pageStr = bytes.Buffer{}
+	//上一页
+	pageStr.WriteString(this.prevPage())
+	//页码
+	if this.AllPage >= this.Pernum {
+		if this.CurPage <= 4 {
+			for nb := 1; nb <= this.Pernum; nb++ {
+				pageStr.WriteString(this.nbPage(nb))
+			}
+		} else {
+			var end = this.CurPage + 3
+			if end > this.AllPage {
+				end = this.AllPage
+			}
+			var begin = end - this.Pernum + 1
+
+			for nb := begin; nb <= this.CurPage; nb++ {
+				pageStr.WriteString(this.nbPage(nb))
+			}
+
+			for nb := this.CurPage + 1; nb <= end; nb++ {
+				pageStr.WriteString(this.nbPage(nb))
+			}
+		}
+	} else { //class="current"
+		for nb := 1; nb <= this.AllPage; nb++ {
+			pageStr.WriteString(this.nbPage(nb))
+		}
+	}
+	//下一页
+	pageStr.WriteString(this.nextPage())
+
+	return pageStr.String()
+}
+
+/**
+分页样式3 上一页 当前页码 下一页
+*/
+func (this *Pager) PageLinkT() string {
+	var pageStr = bytes.Buffer{}
+	//上一页
+	pageStr.WriteString(this.prevPage())
+	//当前页
+	pageStr.WriteString(this.nbPage(this.CurPage))
+	//下一页
+	pageStr.WriteString(this.nextPage())
+
+	return pageStr.String()
+}
+
 /*
 	首页
 */
