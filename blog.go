@@ -323,6 +323,7 @@ func FrontWare() gin.HandlerFunc {
 			wg.Add(1)
 			go models.MultipleLoadColumn(id, pos, columnList, &wg)
 		}
+
 		wg.Wait()
 
 		//过滤空数据

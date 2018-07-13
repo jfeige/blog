@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"fmt"
 )
 
 //首页
@@ -56,6 +57,8 @@ func Index(context *gin.Context) {
 	gh := tmp_gh.(map[string]interface{})
 	gh["articleList"] = articleList
 	gh["pager"] = pager
+
+	fmt.Println(gh)
 
 	context.HTML(http.StatusOK, "front/index.html", gh)
 }
