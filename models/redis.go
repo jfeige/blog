@@ -17,25 +17,25 @@ var (
 
 func initRedisConfig() error {
 
-	rpasswd = lcf.String("redis::rpasswd")
+	rpasswd = Lcf.String("redis::rpasswd")
 	if muser == "" {
 		return errors.New("Can't not find redis parameters:rpasswd")
 	}
-	raddress = lcf.String("redis::raddress")
+	raddress = Lcf.String("redis::raddress")
 	if raddress == "" {
 		return errors.New("Can't not find redis parameters:raddress")
 	}
 
-	rmaxidle, err = lcf.Int("redis::rmaxidle")
+	rmaxidle, err = Lcf.Int("redis::rmaxidle")
 	if rmaxidle == 0 {
 		return errors.New("Can't not find redis parameters:rmaxidle")
 	}
-	rmaxactive, err = lcf.Int("redis::rmaxactive")
+	rmaxactive, err = Lcf.Int("redis::rmaxactive")
 	if rmaxidle == 0 {
 		return errors.New("Can't not find redis parameters:rmaxactive")
 	}
 
-	rtimeout, err = lcf.Int("redis::rtimeout")
+	rtimeout, err = Lcf.Int("redis::rtimeout")
 	if rtimeout == 0 {
 		return errors.New("Can't not find redis parameters:rtimeout")
 	}

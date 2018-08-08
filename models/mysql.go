@@ -17,28 +17,28 @@ var (
 
 func initMysqlConfig() error {
 
-	mdbname = lcf.String("mysql::mdbname")
+	mdbname = Lcf.String("mysql::mdbname")
 	if mdbname == "" {
 		return errors.New("Can't not find mysql parameters:mdbname")
 	}
-	muser = lcf.String("mysql::muser")
+	muser = Lcf.String("mysql::muser")
 	if muser == "" {
 		return errors.New("Can't not find mysql parameters:muser")
 	}
-	mpasswd = lcf.String("mysql::mpasswd")
+	mpasswd = Lcf.String("mysql::mpasswd")
 	if mpasswd == "" {
 		return errors.New("Can't not find mysql parameters:mpasswd")
 	}
-	maddress = lcf.String("mysql::maddress")
+	maddress = Lcf.String("mysql::maddress")
 	if maddress == "" {
 		return errors.New("Can't not find mysql parameters:maddress")
 	}
 
-	maxopenconns, err = lcf.Int("mysql::maxopenconns")
+	maxopenconns, err = Lcf.Int("mysql::maxopenconns")
 	if maxopenconns == 0 {
 		return errors.New("Can't not find mysql parameters:maxopenconns")
 	}
-	maxidleconns, err = lcf.Int("mysql::maxidleconns")
+	maxidleconns, err = Lcf.Int("mysql::maxidleconns")
 	if maxidleconns == 0 {
 		return errors.New("Can't not find mysql parameters:maxidleconns")
 	}

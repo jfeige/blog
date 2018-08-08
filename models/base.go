@@ -15,7 +15,7 @@ var (
 )
 
 var (
-	lcf  lconfig.LConfigInterface
+	Lcf  lconfig.LConfigInterface
 	err  error
 	conn *connect
 )
@@ -27,7 +27,7 @@ type connect struct {
 
 //读取配置文件，初始化数据库和redis连接池
 func InitBaseConfig(file string) error {
-	lcf, err = lconfig.NewConfig(file)
+	Lcf, err = lconfig.NewConfig(file)
 	if err != nil {
 		return err
 	}
@@ -78,19 +78,19 @@ func (this *connect) GetMysqlConn() *sql.DB {
 读取其他配置
 */
 func initDefaultConfig() error {
-	AppPort = lcf.String("app_port")
+	AppPort = Lcf.String("app_port")
 	if AppPort == ""{
 		return errors.New("config parameters:app_port is error!")
 	}
-	SessionName = lcf.String("session_name")
+	SessionName = Lcf.String("session_name")
 	if SessionName == ""{
 		return errors.New("config parameters:session_name is error!")
 	}
-	SessionTime,_ = lcf.Int("session_time")
+	SessionTime,_ = Lcf.Int("session_time")
 	if SessionTime <= 0{
 		return errors.New("config parameters:session_time is error!")
 	}
-	BlogPageSize, _ = lcf.Int("bolg_pagesize")
+	BlogPageSize, _ = Lcf.Int("bolg_pagesize")
 	if BlogPageSize <= 0 {
 		return errors.New("Can't not find default parameters:bolg_pagesize")
 	}

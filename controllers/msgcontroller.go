@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"blog/models"
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
 	"math"
 	"net/http"
 	"strconv"
