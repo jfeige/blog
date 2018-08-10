@@ -79,6 +79,7 @@ func MLogin(context *gin.Context) {
 		session.Set("uid", user.Id)
 		session.Set("name", user.Name)
 		session.Set("nickname", user.Nickname)
+		session.Save()
 
 	} else {
 		login_ret = false
