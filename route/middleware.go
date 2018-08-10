@@ -33,6 +33,7 @@ func SessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		c.Set("session", session)
+		session.Save()
 		c.Next()
 	}
 }
