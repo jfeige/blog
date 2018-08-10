@@ -5,8 +5,6 @@ import (
 	"blog/route"
 	"blog/models"
 	log "github.com/alecthomas/log4go"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"runtime"
