@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"sync"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 )
 
 //首页
@@ -72,11 +73,11 @@ func MLogin(context *gin.Context) {
 	if login_ret {
 		//登录成功，写入session
 		tmpSession, _ := context.Get("session")
-		session := tmpSession.(*models.Session)
+		session := tmpSession.(sessions.Session)
 
-		session.SetSession("uid", user.Id)
-		session.SetSession("name", user.Name)
-		session.SetSession("nickname", user.Nickname)
+		session.Set("uid", user.Id)
+		session.Set("name", user.Name)
+		session.Set("nickname", user.Nickname)
 
 	} else {
 		login_ret = false
