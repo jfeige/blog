@@ -4,6 +4,7 @@ import (
 	"blog/models"
 	log "github.com/alecthomas/log4go"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/sessions"
 	"io"
 	"math"
 	"net/http"
@@ -53,7 +54,7 @@ func Article(context *gin.Context) {
 
 	tmpSession, ok := context.Get("session")
 	if ok {
-		session := tmpSession.(*models.Session)
+		session := tmpSession.(sessions.Session)
 		gh["session"] = session
 	}
 
