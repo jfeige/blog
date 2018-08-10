@@ -5,37 +5,16 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
+	"fmt"
 )
-
-
-func aa(){
-	r := gin.Default()
-	store, _ := redis.NewStore(10, "tcp", "182.92.158.94:6379", "lifei", []byte("secret"))
-	r.Use(sessions.Sessions("session_id", store))
-
-	r.GET("/incr", func(c *gin.Context) {
-		session := sessions.Default(c)
-		var count int
-		v := session.Get("count")
-		if v == nil {
-			count = 0
-		} else {
-			count = v.(int)
-			count++
-		}
-		session.Set("count", count)
-		session.Save()
-		c.JSON(200, gin.H{"count": count})
-	})
-	r.Run(":8000")
-}
 
 
 func InitRouter() *gin.Engine {
 
 	router := gin.Default()
 
-	store, _ := redis.NewStore(10, "tcp", "182.92.158.94:6379", "lifei", []byte("secret"))
+	store, err := redis.NewStore(10, "tcp", "182.92.158.94:6379", "lifei", []byte("secret"))
+	fmt.Println("=====>",err)
 	router.Use(sessions.Sessions("session_id", store))
 	router.Use(SessionWare())
 	router.Use(FrontWare())
