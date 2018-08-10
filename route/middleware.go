@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 	"blog/models"
+	"fmt"
 )
 
 /**
@@ -17,6 +18,7 @@ func ExistSessionWare() gin.HandlerFunc {
 		session := sessions.Default(c)
 
 		if uid := session.Get("uid");uid != nil{
+			fmt.Println("---------")
 			c.Redirect(http.StatusFound, "/manage/index")
 			c.Abort()
 			return
