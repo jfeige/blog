@@ -15,6 +15,7 @@ func Logout(context *gin.Context) {
 		fmt.Println("--------1--------->")
 		session := tmpSession.(sessions.Session)
 		session.Clear()
+		session.Save()
 		fmt.Println("--------2--------->")
 	}
 
