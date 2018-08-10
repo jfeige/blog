@@ -1,10 +1,7 @@
 package route
 
 import (
-	//"gopkg.in/gin-gonic/gin.v1"
 	"blog/controllers"
-
-
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
@@ -13,8 +10,8 @@ import (
 
 func aa(){
 	r := gin.Default()
-	store, _ := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
-	r.Use(sessions.Sessions("mysession", store))
+	store, _ := redis.NewStore(10, "tcp", "182.92.158.94:6379", "lifei", []byte("secret"))
+	r.Use(sessions.Sessions("session_id", store))
 
 	r.GET("/incr", func(c *gin.Context) {
 		session := sessions.Default(c)
@@ -38,6 +35,11 @@ func InitRouter() *gin.Engine {
 
 	router := gin.Default()
 
+	store, _ := redis.NewStore(10, "tcp", "182.92.158.94:6379", "lifei", []byte("secret"))
+	router.Use(sessions.Sessions("session_id", store))
+	router.Use(SessionWare())
+	router.Use(FrontWare())
+
 	//模版文件和静态资源文件
 	router.LoadHTMLGlob("views/**/*")
 	//静态文件加载
@@ -46,22 +48,22 @@ func InitRouter() *gin.Engine {
 
 	//前台页面-----------------------------------------------------------
 	//首页
-	router.GET("/", FrontWare(), SessionWare(), controllers.Index)
-	router.GET("/index/*page", FrontWare(), SessionWare(), controllers.Index)
+	router.GET("/", FrontWare(),  controllers.Index)
+	router.GET("/index/*page", FrontWare(),  controllers.Index)
 	//文章详情页面
-	router.GET("/article/:arteid", FrontWare(), SessionWare(), controllers.Article)
+	router.GET("/article/:arteid", FrontWare(), controllers.Article)
 	//类别页面
-	router.GET("/category/:cateid/*page", FrontWare(), SessionWare(), controllers.CategoryFront)
+	router.GET("/category/:cateid/*page", FrontWare(),  controllers.CategoryFront)
 	//标签页面
-	router.GET("/tag/:tagid/*page", FrontWare(), SessionWare(), controllers.TagIndex)
+	router.GET("/tag/:tagid/*page", FrontWare(),  controllers.TagIndex)
 	//添加一条回复
-	router.POST("/addComment", SessionWare(), controllers.AddComment)
+	router.POST("/addComment",  controllers.AddComment)
 	//留言板
-	router.GET("/msg/*page", FrontWare(), SessionWare(), controllers.MessageBorad)
+	router.GET("/msg/*page", FrontWare(),  controllers.MessageBorad)
 	//提交留言
-	router.POST("/addMsg", SessionWare(), controllers.AddMsg)
+	router.POST("/addMsg",  controllers.AddMsg)
 	//关于我
-	router.GET("/my", FrontWare(), SessionWare(), controllers.Myinfo)
+	router.GET("/my", FrontWare(), controllers.Myinfo)
 
 	//跳转到登录页面
 	router.GET("/login", ExistSessionWare(), controllers.Login)

@@ -3,6 +3,7 @@ package route
 import (
 	//"gopkg.in/gin-gonic/gin.v1"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/sessions"
 	"net/http"
 	"sync"
 	"blog/models"
@@ -13,26 +14,12 @@ Session已经存在
 */
 func ExistSessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var session *models.Session
-		sessid, _ := c.Cookie(models.SessionName)
-		if sessid != "" {
-			session = models.NewSession(sessid)
-			if session.Has("uid") {
-				//跳转到后台首页
-				c.Redirect(http.StatusFound, "/manage/index")
-				c.Abort()
-				return
-			} else {
-				cookie := &http.Cookie{
-					Name:     models.SessionName,
-					Value:    session.SessionID(),
-					Path:     "/",
-					HttpOnly: true,
-				}
-				http.SetCookie(c.Writer, cookie)
-				c.Set("session", session)
-				c.Next()
-			}
+		session := sessions.Default(c)
+
+		if uid := session.Get("uid");uid != nil{
+			c.Redirect(http.StatusFound, "/manage/index")
+			c.Abort()
+			return
 		}
 	}
 }
@@ -42,23 +29,7 @@ Session中间件
 */
 func SessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var session *models.Session
-		sessid, _ := c.Cookie(models.SessionName)
-		if sessid == "" {
-			session = models.NewSession()
-		} else {
-			session = models.NewSession(sessid)
-		}
-		cookie := &http.Cookie{
-			Name:     models.SessionName,
-			Value:    session.SessionID(),
-			Path:     "/",
-			HttpOnly: true,
-		}
-		if session.Has("uid") {
-			session.Expire()
-		}
-		http.SetCookie(c.Writer, cookie)
+		session := sessions.Default(c)
 		c.Set("session", session)
 		c.Next()
 	}
@@ -69,26 +40,13 @@ func SessionWare() gin.HandlerFunc {
 */
 func NoSessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var session *models.Session
-		sessid, _ := c.Cookie(models.SessionName)
-		if sessid == "" {
-			session = models.NewSession()
-		} else {
-			session = models.NewSession(sessid)
-		}
-		cookie := &http.Cookie{
-			Name:     models.SessionName,
-			Value:    session.SessionID(),
-			Path:     "/",
-			HttpOnly: true,
-		}
-		http.SetCookie(c.Writer, cookie)
-		if !session.Has("uid") {
+		session := sessions.Default(c)
+
+		if uid := session.Get("uid");uid == nil{
 			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
 			return
 		}
-		session.Expire()
 		c.Set("session", session)
 		c.Next()
 	}

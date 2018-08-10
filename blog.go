@@ -5,10 +5,11 @@ import (
 	"blog/route"
 	"blog/models"
 	log "github.com/alecthomas/log4go"
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/redis"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"runtime"
-	"sync"
 	"flag"
 )
 
@@ -36,10 +37,13 @@ func main() {
 		return
 	}
 
+	//路由
+	router := route.InitRouter()
+
 	//前台文章浏览量入库
 	go controllers.ProcessReadData()
 
-	router := route.InitRouter()
+
 
 	http.ListenAndServe(models.AppPort, router)
 }
