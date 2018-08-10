@@ -54,12 +54,9 @@ func Article(context *gin.Context) {
 
 	gh["isLogin"] = false
 
-	tmpSession, ok := context.Get("session")
-	if ok {
-		session := tmpSession.(sessions.Session)
-		if uid := session.Get("uid");uid != nil{
-			gh["isLogin"] = true
-		}
+	session := sessions.Default(context)
+	if uid := session.Get("uid");uid != nil{
+		gh["isLogin"] = true
 	}
 
 	context.HTML(http.StatusOK, "article.html", gh)
@@ -250,9 +247,8 @@ func AddArticle(context *gin.Context) {
 		if !ok || tagids == "" {
 			return
 		}
-		tmpSession, _ := context.Get("session")
-		session := tmpSession.(*models.Session)
-		user := session.GetSession("nickname").(string)
+		session := sessions.Default(context)
+		user := session.Get("nickname").(string)
 
 		code := models.AddArticle(cateid, title, user, content, tagids)
 		if code < 0 {

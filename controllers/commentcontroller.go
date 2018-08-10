@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"github.com/gin-contrib/sessions"
 )
 
 /**
@@ -44,24 +45,20 @@ func AddComment(context *gin.Context) {
 	}
 	tp, _ := strconv.Atoi(tmp_tp) //0:评论;1:回复
 
-	var session *models.Session
 	var name string
 
-	tmpSession, ok := context.Get("session")
-	if !ok && tp == 1 {
-		errcode = -1
-		errinfo = "只有站长才可以回复!"
-		return
-	}
-	session = tmpSession.(*models.Session)
-	if !session.Has("uid") && tp == 1 {
+	session := sessions.Default(context)
+
+	uid := session.Get("uid")
+
+	if uid == nil && tp == 1 {
 		errcode = -1
 		errinfo = "只有站长才可以回复!"
 		return
 	}
 
-	if session.Has("uid") {
-		name = session.GetSession("nickname").(string)
+	if uid != nil {
+		name = session.Get("nickname").(string)
 	} else {
 		name, ok = context.GetPostForm("name")
 		if !ok {

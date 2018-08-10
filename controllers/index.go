@@ -73,8 +73,7 @@ func MLogin(context *gin.Context) {
 	user, login_ret := models.Login(loginname, password)
 	if login_ret {
 		//登录成功，写入session
-		tmpSession, _ := context.Get("session")
-		session := tmpSession.(sessions.Session)
+		session := sessions.Default(context)
 		fmt.Println(session)
 		session.Set("uid", user.Id)
 		session.Set("name", user.Name)

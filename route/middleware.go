@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"sync"
 	"blog/models"
-	"fmt"
 )
 
 /**
@@ -16,9 +15,7 @@ Session已经存在
 func ExistSessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-
 		if uid := session.Get("uid");uid != nil{
-			fmt.Println("---------")
 			c.Redirect(http.StatusFound, "/manage/index")
 			c.Abort()
 			return
@@ -26,17 +23,6 @@ func ExistSessionWare() gin.HandlerFunc {
 	}
 }
 
-/**
-Session中间件
-*/
-func SessionWare() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		session := sessions.Default(c)
-		c.Set("session", session)
-		session.Save()
-		c.Next()
-	}
-}
 
 /**
 没有session
@@ -44,7 +30,6 @@ func SessionWare() gin.HandlerFunc {
 func NoSessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		fmt.Println("=========",session)
 		if uid := session.Get("uid");uid == nil{
 			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
