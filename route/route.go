@@ -5,7 +5,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
-	"fmt"
 )
 
 
@@ -13,11 +12,9 @@ func InitRouter() *gin.Engine {
 
 	router := gin.Default()
 
-	store, err := redis.NewStore(10, "tcp", "182.92.158.94:6379", "lifei", []byte("secret"))
-	fmt.Println("=====>",err)
+	store, _ := redis.NewStore(10, "tcp", "182.92.158.94:6379", "lifei", []byte("secret"))
 	router.Use(sessions.Sessions("session_id", store))
 	router.Use(SessionWare())
-	router.Use(FrontWare())
 
 	//模版文件和静态资源文件
 	router.LoadHTMLGlob("views/**/*")
