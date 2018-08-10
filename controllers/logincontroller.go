@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"github.com/gin-contrib/sessions"
+	"fmt"
 )
 
 func Logout(context *gin.Context) {
@@ -11,6 +12,7 @@ func Logout(context *gin.Context) {
 	//销毁session
 	tmpSession, exists := context.Get("session")
 	if exists {
+		fmt.Println("-----------------")
 		session := tmpSession.(sessions.Session)
 		session.Clear()
 	}
