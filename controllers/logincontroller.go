@@ -12,9 +12,10 @@ func Logout(context *gin.Context) {
 	//销毁session
 	tmpSession, exists := context.Get("session")
 	if exists {
-		fmt.Println("-----------------")
+		fmt.Println("--------1--------->")
 		session := tmpSession.(sessions.Session)
 		session.Clear()
+		fmt.Println("--------2--------->")
 	}
 
 	//跳转到登录页面或者前台首页
