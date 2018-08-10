@@ -74,7 +74,7 @@ func MLogin(context *gin.Context) {
 		//登录成功，写入session
 		tmpSession, _ := context.Get("session")
 		session := tmpSession.(sessions.Session)
-
+		fmt.Println(session)
 		session.Set("uid", user.Id)
 		session.Set("name", user.Name)
 		session.Set("nickname", user.Nickname)
