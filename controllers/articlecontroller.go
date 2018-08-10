@@ -52,10 +52,14 @@ func Article(context *gin.Context) {
 	gh["cns"] = len(commentList)
 	gh["article"] = article
 
+	gh["isLogin"] = false
+
 	tmpSession, ok := context.Get("session")
 	if ok {
 		session := tmpSession.(sessions.Session)
-		gh["session"] = session
+		if uid := session.Get("uid");uid != nil{
+			gh["isLogin"] = true
+		}
 	}
 
 	context.HTML(http.StatusOK, "article.html", gh)

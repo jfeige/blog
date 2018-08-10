@@ -41,7 +41,7 @@
                             <p><a href="#">{{$v.Name}}</a> Says:<br />{{$v.FormatAtime "Jan 02th, 2006 at 15:04"}}</p>
                              <p>{{$v.Content}}</p>
                           </span>
-                         {{if $.session.Has "uid"}}
+                         {{if $.isLogin}}
                             <a  onclick="showHuifu('{{$v.Id}}');">回复</a>
                          {{end}}
                      </div>
@@ -52,7 +52,7 @@
         <div id="pinglun" class="article">
           <h2>发表评论</h2><div class="clr"></div>
             <ol>
-                {{if .session.Has "uid"}}
+                {{if .isLogin}}
                 {{else}}
                     <li>
                         <label for="message">姓名<span style="color:red">*</span></label>
