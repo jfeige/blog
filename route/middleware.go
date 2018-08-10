@@ -43,7 +43,7 @@ func SessionWare() gin.HandlerFunc {
 func NoSessionWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-
+		fmt.Println("=========",session)
 		if uid := session.Get("uid");uid == nil{
 			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
