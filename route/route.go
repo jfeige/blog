@@ -14,7 +14,7 @@ func InitRouter() *gin.Engine {
 
 	store, _ := redis.NewStore(10, "tcp", "182.92.158.94:6379", "lifei", []byte("secret"))
 	router.Use(sessions.Sessions("session_id", store))
-	//router.Use(SessionWare())
+	router.Use(SessionWare())
 
 	//模版文件和静态资源文件
 	router.LoadHTMLGlob("views/**/*")

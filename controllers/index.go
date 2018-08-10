@@ -14,10 +14,6 @@ import (
 //首页
 func Index(context *gin.Context) {
 
-	session := sessions.Default(context)
-	context.Set("session", session)
-	session.Save()
-
 	var wg sync.WaitGroup
 	//文章列表
 	tmpPage := context.Param("page")
